@@ -16,6 +16,19 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Staff tools
+
+The small lock in the website footer opens `/admin`. A successful sign-in opens the estimate and invoice builder at `/Tools`. Both the builder and its document-number API check the signed staff session. The builder source is copied from the sibling `golden-epoxy-tools` project with `node scripts/import-tools.mjs`; run that command again after updating the source tool.
+
+Set these server-only environment variables locally in `.env.local` and in the Vercel project before deploying:
+
+```text
+GE_ADMIN_PASSWORD=<staff password>
+GE_ADMIN_SESSION_SECRET=<random secret of at least 32 bytes>
+```
+
+For a shared estimate/invoice number across devices, also configure the existing Upstash Redis REST credentials as `KV_REST_API_URL` and `KV_REST_API_TOKEN` (or `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`). Without them, the builder uses its existing browser-local number fallback, so different devices can produce duplicate numbers.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
