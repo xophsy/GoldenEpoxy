@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   }
 
   const session = createAdminSession();
-  const response = NextResponse.redirect(new URL("/Tools", request.url), 303);
+  const response = NextResponse.redirect(new URL("/tools", request.url), 303);
   response.cookies.set(adminCookieName, session.value, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

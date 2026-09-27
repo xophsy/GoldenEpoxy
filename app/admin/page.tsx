@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  if (await hasAdminSession()) redirect("/Tools");
+  if (await hasAdminSession()) redirect("/tools");
   const { error } = await searchParams;
   const configured = adminIsConfigured();
 
@@ -18,7 +18,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       <div className="w-full max-w-md rounded-[2rem] border border-white/10 bg-white/[0.05] p-8 shadow-2xl sm:p-10">
         <Link href="/" className="text-xs font-semibold uppercase tracking-[0.24em] text-gold-300">Golden Epoxy</Link>
         <h1 className="mt-8 text-3xl font-semibold tracking-tight text-white">Staff tools</h1>
-        <p className="mt-3 text-sm leading-6 text-white/65">Enter the staff password to open the estimate and invoice builder.</p>
+        <p className="mt-3 text-sm leading-6 text-white/65">Enter the staff password to open your tools.</p>
         {error === "invalid" ? <p role="alert" className="mt-5 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-100">Incorrect password. Try again.</p> : null}
         {!configured ? <p role="alert" className="mt-5 rounded-xl border border-gold-400/30 bg-gold-400/10 px-4 py-3 text-sm text-gold-100">Staff access is not configured yet.</p> : null}
         <form action="/admin/login" method="post" className="mt-7 space-y-5">

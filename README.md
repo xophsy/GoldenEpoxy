@@ -18,7 +18,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Staff tools
 
-The small lock in the website footer opens `/admin`. A successful sign-in opens the estimate and invoice builder at `/Tools`. Both the builder and its document-number API check the signed staff session. The builder source is copied from the sibling `golden-epoxy-tools` project with `node scripts/import-tools.mjs`; run that command again after updating the source tool.
+The small lock in the website footer opens `/admin`. A successful sign-in opens the menu at `/tools`, with the estimate and invoice builder at `/tools/estimate-builder`. Both pages and the document-number API check the signed staff session. The old `/Tools` URL redirects to the menu. The builder source is copied from the sibling `golden-epoxy-tools` project with `node scripts/import-tools.mjs`; run that command again after updating the source tool. In an isolated worktree, set `GOLDEN_EPOXY_TOOLS_SOURCE` to the tools project directory first.
 
 Set these server-only environment variables locally in `.env.local` and in the Vercel project before deploying:
 
