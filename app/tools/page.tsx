@@ -28,6 +28,16 @@ export default async function ToolsPage() {
         </div>
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2">
+          <Link href="/tools/material-planner" className="group flex min-h-64 flex-col rounded-[2rem] border border-white/10 bg-white/[0.05] p-7 shadow-2xl transition-colors hover:border-gold-300/40 hover:bg-white/[0.08] sm:p-9">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gold-400/15 text-gold-300" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 18 9 6l4 8 3-5 5 9H3Z" /><path d="M5 21h14M8 15h2M14 17h2" />
+              </svg>
+            </span>
+            <h2 className="mt-8 text-2xl font-semibold tracking-tight text-white">Simiron Material Planner</h2>
+            <p className="mt-3 max-w-md text-sm leading-6 text-white/60">Estimate coating, chip, and pigment quantities for each job and print a material sheet.</p>
+            <span className="mt-auto pt-8 text-sm font-semibold text-gold-300 group-hover:text-gold-200">Open tool <span aria-hidden="true">→</span></span>
+          </Link>
           <Link href="/tools/estimate-builder" className="group flex min-h-64 flex-col rounded-[2rem] border border-white/10 bg-white/[0.05] p-7 shadow-2xl transition-colors hover:border-gold-300/40 hover:bg-white/[0.08] sm:p-9">
             <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gold-400/15 text-gold-300" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">

@@ -15,6 +15,10 @@ const anonymousBuilder = await request("/tools/estimate-builder");
 assert.equal(anonymousBuilder.status, 307);
 assert.equal(new URL(anonymousBuilder.headers.get("location"), origin).pathname, "/admin");
 
+const anonymousPlanner = await request("/tools/material-planner");
+assert.equal(anonymousPlanner.status, 307);
+assert.equal(new URL(anonymousPlanner.headers.get("location"), origin).pathname, "/admin");
+
 const anonymousCounter = await request("/admin/number");
 assert.equal(anonymousCounter.status, 401);
 
@@ -30,12 +34,20 @@ assert.ok(cookie);
 
 const menu = await request("/tools", { headers: { cookie } });
 assert.equal(menu.status, 200);
-assert.match(await menu.text(), /href="\/tools\/estimate-builder"/);
+const menuHtml = await menu.text();
+assert.match(menuHtml, /href="\/tools\/estimate-builder"/);
+assert.match(menuHtml, /href="\/tools\/material-planner"/);
 
 const builder = await request("/tools/estimate-builder", { headers: { cookie } });
 assert.equal(builder.status, 200);
 assert.match(await builder.text(), /Golden Epoxy · Builder/);
 assert.match(builder.headers.get("x-robots-tag"), /noindex/);
+
+const planner = await request("/tools/material-planner", { headers: { cookie } });
+assert.equal(planner.status, 200);
+const plannerHtml = await planner.text();
+assert.match(plannerHtml, /Material Planner/);
+assert.match(plannerHtml, /name="robots" content="noindex, nofollow"/);
 
 const counter = await request("/admin/number", { headers: { cookie } });
 assert.ok([200, 501].includes(counter.status));
@@ -44,4 +56,4 @@ const logout = await request("/admin/logout", { method: "POST", headers: { cooki
 assert.equal(logout.status, 303);
 assert.equal(new URL(logout.headers.get("location")).pathname, "/admin");
 
-console.log("Admin access, tools menu, nested builder, counter guard, and logout checks passed.");
+console.log("Admin access, tools menu, both staff tools, counter guard, and logout checks passed.");
