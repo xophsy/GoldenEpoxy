@@ -111,8 +111,14 @@ export default function SiteFooter({ homeLinks = true }: Props) {
           </div>
         </div>
 
-        <div className="pt-5 text-center text-xs uppercase tracking-[0.22em] text-white/40">
+        <div className="relative pt-5 text-center text-xs uppercase tracking-[0.22em] text-white/40">
           &copy; {new Date().getFullYear()} Golden Epoxy. All rights reserved.
+          <Link href="/admin" aria-label="Staff tools" title="Staff tools" className="absolute right-0 top-4 flex h-7 w-7 items-center justify-center rounded-full text-white/25 hover:text-gold-300 focus:text-gold-300">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="5" y="10" width="14" height="11" rx="2" />
+              <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+            </svg>
+          </Link>
         </div>
       </div>
     </footer>
