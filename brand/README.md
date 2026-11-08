@@ -4,7 +4,7 @@ Copies of the final logos. The website keeps using the originals listed below, s
 
 | File | What it is | Size | Original | Used on |
 |---|---|---|---|---|
-| `wordmark.png` | "GOLDEN — EPOXY —" classic capitals (the earlier wordmark) in the crown's gold | 753 × 215 | `public/goldenepoxy-wordmark-v4.png` | Site header |
+| `wordmark.png` | "GOLDEN — EPOXY —" Roman capitals (Cinzel) in the crown's gold with its thin dark outline | 2838 × 745 | `public/goldenepoxy-wordmark-v5.png` | Site header |
 | `crown-original.webp` | Original crown, no drips; the header animation starts on this | 1536 × 1024 | (this file) | Header animation start |
 | `crown-drip-original.webp` | Original dripping crown; the header animation ends on this | 1254 × 1254 | (this file) | Header animation end |
 | `crown-drip.png` | Dripping crown as the site shows it | 480 × 480 | `public/goldenepoxy-crown-v5-still.png` | Site header (last frame of the animation) |
@@ -20,3 +20,7 @@ The estimate/invoice logo uses the same capitals in the earlier, darker gold.
 Rebuild the header animation after changing either original:
 
     python crown_drip.py --sheets-ref brand/crown-drip-original.webp public brand/crown-original.webp
+
+Rebuild the wordmark (needs the free Cinzel font, `Cinzel[wght].ttf` from github.com/google/fonts/tree/main/ofl/cinzel; it takes its colours from the dripping crown):
+
+    python wordmark.py path/to/Cinzel[wght].ttf brand/crown-drip-original.webp public/goldenepoxy-wordmark-v5.png

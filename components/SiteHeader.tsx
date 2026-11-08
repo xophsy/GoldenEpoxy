@@ -21,6 +21,7 @@ export default function SiteHeader({ homeLinks = true, overlayHero = false }: Pr
     ...link,
     href: resolveNavHref(link.href, homeLinks),
   }));
+  const splitAt = Math.ceil(navLinks.length / 2);
 
   const handleLogoClick = () => {
     setMobileOpen(false);
@@ -82,25 +83,33 @@ export default function SiteHeader({ homeLinks = true, overlayHero = false }: Pr
             </div>
           </div>
 
-          {/* Wordmark — absolutely positioned like the crown, independent of flex layout */}
-          <div className="site-header__wordmark absolute left-[137px] top-1/2 -translate-y-1/2 z-10">
+          {/* Wordmark — absolutely centered in the bar, independent of flex layout */}
+          <div className="site-header__wordmark absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
             <Link href="/" onClick={handleLogoClick}>
               <Image
-                src="/goldenepoxy-wordmark-v4.png"
+                src="/goldenepoxy-wordmark-v5.png"
                 alt="Golden Epoxy"
-                width={753}
-                height={215}
+                width={206}
+                height={54}
                 className="h-[54px] w-auto object-contain"
               />
             </Link>
           </div>
-          {/* Spacer to push right side into position */}
-          <div className="flex-1" />
-          {/* Right side — always flex, content switches at lg */}
-          <div className="site-header__actions relative z-20 flex items-center gap-8">
-            {/* Desktop nav links */}
-            <ul className="hidden xl:flex items-center gap-7 text-sm text-white/72">
-              {navLinks.map((link) => (
+          {/* Desktop: the links split around the centered wordmark. This half is exactly 50% (padding
+              included), so the seam with the right half is the bar's center; padding clears the crown and wordmark. */}
+          <ul className="hidden xl:flex basis-1/2 shrink-0 items-center justify-center gap-7 pl-[184px] pr-[128px] text-sm text-white/72">
+            {navLinks.slice(0, splitAt).map((link) => (
+              <li key={link.href}>
+                <Link className="hover:text-gold-300" href={link.href}>
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          {/* Right half — always flex, content switches at xl */}
+          <div className="site-header__actions relative z-20 flex flex-1 items-center justify-end gap-8">
+            <ul className="hidden xl:flex flex-1 items-center justify-center gap-7 pl-[128px] text-sm text-white/72">
+              {navLinks.slice(splitAt).map((link) => (
                 <li key={link.href}>
                   <Link className="hover:text-gold-300" href={link.href}>
                     {link.label}
