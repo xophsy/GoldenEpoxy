@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "targets": {
+    "/": {
+      "targetKind": "existing-ui",
+      "projectId": "bd7f77ff-c623-4ec7-8c80-daf8dac7be3e",
+      "activeDraftId": "5ab18b36-5a02-40f4-8181-e7f34b4df0e7",
+      "designSystemPath": ".superdesign/design-system.md",
+      "referenceIds": [
+        "public-legacy-images-logonew.png",
+        "public-legacy-images-logo-text.png",
+        "62814442-544e-4b03-a804-5fbad7489ae0"
+      ],
+      "brandAssets": {
+        "logo": {
+          "assetKey": "public-legacy-images-logonew.png",
+          "url": "https://vgbujcuwptvheqijyjbe.supabase.co/storage/v1/object/public/hmac-uploads/projects/bd7f77ff-c623-4ec7-8c80-daf8dac7be3e/brand-assets/public-legacy-images-logonew.png/logonew.png",
+          "sourcePath": "public/legacy-images/logonew.png"
+        }
+      },
+      "contextFiles": [
+        ".superdesign/design-system.md",
+        "components/HeroSection.tsx",
+        "components/HeroSection.module.css",
+        "components/SiteHeader.tsx",
+        "components/design-system.tsx",
+        "data/navigation.ts",
+        "app/globals.css:1:150"
+      ],
+      "fingerprints": {
+        ".superdesign/design-system.md": "b90d3e2c8cda77e1b902b4072f9b0bf1b78df82c0dda7aa256c900c903d15be4",
+        "components/HeroSection.tsx": "b529793d8716be091f714c8b6d458620dd29d1890d782aae1b23c5352d10a84a",
+        "components/HeroSection.module.css": "9a5709d8537a1eab5c06ce1e6926a036d0928ba289569010dd6de0d7e6d1b788",
+        "components/SiteHeader.tsx": "16a816f9b064477817f31157db0625a7ac33b870c67ae4dc8ad2947fc6b7a1cf",
+        "components/design-system.tsx": "56f87c91587c260c7584a2a6dc0ac54a4fa693945505153d8e35c426c172eecc",
+        "data/navigation.ts": "f0cb6d26e2c32eafcd1b2d38351092408889233916ff2bb6f190b9b4d9ca49e1",
+        "app/globals.css": "bc72e12234097ec2a48cd14ddb0e0f067627925d913b4a9b1a14c44a4c1a4f9a"
+      },
+      "drafts": {
+        "5ab18b36-5a02-40f4-8181-e7f34b4df0e7": {
+          "title": "Golden Epoxy — Calm photo-led hero",
+          "visualDirection": "Brighter original centered photo, original crown and serif wordmark, with warm golden yellow hero accents matching Free Quote",
+          "currentVersion": 9
+        }
+      },
+      "updatedAt": "2026-10-04T16:18:03.9335944Z"
+    }
+  }
+}

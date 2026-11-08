@@ -1,72 +1,26 @@
-import CatalogGrid from "@/components/CatalogGrid";
-import { ButtonLink, SectionShell } from "@/components/design-system";
+import type { Metadata } from "next";
+import Image from "next/image";
+import { ButtonLink } from "@/components/design-system";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
+import styles from "@/components/collection-pages.module.css";
+import CatalogGrid from "@/components/CatalogGrid";
 import { getCatalogCategories } from "@/lib/catalog";
-
+export const metadata: Metadata = { title: "Finish Catalog", description: "Explore metallic epoxy, flake blends, and neon colors for your Tampa Bay floor." };
 export default function CatalogPage() {
   const categories = getCatalogCategories();
   const total = categories.reduce((sum, category) => sum + category.count, 0);
-
-  return (
-    <div className="site-shell">
-      <SiteHeader homeLinks={false} />
-      <main>
-        <section className="gallery-page-header">
-          <div className="gallery-page-header__glow gallery-page-header__glow--1" aria-hidden />
-          <div className="gallery-page-header__glow gallery-page-header__glow--2" aria-hidden />
-          <div className="content-shell">
-            <div className="grid gap-10 md:grid-cols-[minmax(0,1fr)_minmax(15rem,18rem)] md:items-end">
-              <div>
-                <div className="gallery-eyebrow">
-                  <div className="gallery-eyebrow__line" aria-hidden />
-                  <span>Catalog</span>
-                </div>
-                <p className="mb-4 inline-flex items-center rounded-full border border-gold-300/35 bg-gold-400/12 px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-gold-200">
-                  Under Construction
-                </p>
-                <h1 className="gallery-page-header__title">Find your finish.</h1>
-                <p className="gallery-page-header__desc">
-                  Browse our full color catalog by finish type. Explore metallic depth, flake blends, and neon accents
-                  to choose the system that matches your space.
-                </p>
-              </div>
-              <div className="surface-card rounded-3xl p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-gold-300/85">Available Colors</p>
-                <p className="mt-3 text-5xl font-black tracking-[-0.05em] text-gold-300">{total}</p>
-                <p className="mt-2 text-sm text-white/65">
-                  Swatches grouped into Metallic, Flakes, and Neon collections.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <SectionShell className="section-shell-tight">
-          <CatalogGrid categories={categories} />
-        </SectionShell>
-
-        <SectionShell className="section-shell-compact">
-          <div className="section-cta-premium rounded-[2rem] px-6 py-14 text-center md:px-10 md:py-20">
-            <p className="section-eyebrow mx-auto justify-center">Need Help Choosing?</p>
-            <h2 className="section-title mx-auto mt-5 max-w-2xl">
-              We can match your color palette to your concrete, lighting, and usage.
-            </h2>
-            <p className="section-body mx-auto mt-5 text-center">
-              Tell us your space goals and we&apos;ll recommend a finish system that looks right and performs long-term.
-            </p>
-            <div className="mt-9 flex flex-wrap justify-center gap-3">
-              <ButtonLink href="/contact" className="sm:w-auto">
-                Request a Free Estimate
-              </ButtonLink>
-              <ButtonLink href="/gallery" variant="secondary" className="sm:w-auto">
-                View Completed Floors
-              </ButtonLink>
-            </div>
-          </div>
-        </SectionShell>
-      </main>
-      <SiteFooter homeLinks={false} />
-    </div>
-  );
+  return <div className="site-shell"><SiteHeader homeLinks={false} />
+    <main className={styles.page}>
+      <section className={`content-shell ${styles.catalogHero}`}>
+        <div className={styles.ruleLabel}><span>The finish collection</span><span>{total} colors · 3 collections</span></div>
+        <div className={styles.introRow}><h1 className={styles.title}>Find your<br />signature finish.</h1><div className={styles.introCopy}><p>Quiet neutrals. Rich metallics. A little more character. Explore the colors and textures that make a space your own.</p><a href="#finish-browser" className={styles.textLink}>Explore the collection <span aria-hidden>↓</span></a></div></div>
+        <div className={styles.collectionStrip}>{categories.map((category) => {
+          const swatch = category.images[Math.min(8, category.images.length - 1)];
+          return swatch ? <div key={category.key} className={styles.collectionPreview}><Image src={swatch.thumbnail.webp} alt={swatch.alt} width={swatch.thumbnail.width} height={swatch.thumbnail.height} priority /><div><span>{category.label}</span><span>{category.count} colors</span></div></div> : null;
+        })}</div>
+      </section>
+      <section id="finish-browser" className={`content-shell ${styles.browser}`} aria-label="Browse finish colors"><CatalogGrid categories={categories} /><p className={styles.note}>Screen colors are a guide. Lighting, application, and your concrete can affect the final appearance. Confirm your selection with a physical sample.</p></section>
+      <section className={`content-shell ${styles.nextStep}`}><div><p className={styles.eyebrow}>From swatch to space</p><h2>See how a finish<br />comes to life.</h2><p>Browse completed floors, or let us help choose a system for your space.</p></div><div className={styles.actions}><ButtonLink href="/gallery" variant="secondary">View Our Work</ButtonLink><ButtonLink href="/contact">Get a Free Quote</ButtonLink></div></section>
+    </main><SiteFooter homeLinks={false} /></div>;
 }

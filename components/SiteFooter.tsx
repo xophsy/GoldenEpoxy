@@ -1,6 +1,4 @@
-import Image from "next/image";
 import Link from "next/link";
-import { ButtonLink } from "@/components/design-system";
 import { footerNavLinks, resolveNavHref } from "@/data/navigation";
 
 type Props = {
@@ -17,21 +15,8 @@ export default function SiteFooter({ homeLinks = true }: Props) {
     <footer className="section-shell section-shell-tight border-t border-white/8 bg-black/24">
       <div className="content-shell">
         <div className="section-panel px-6 py-8 md:px-8 md:py-10">
-          <div className="grid gap-8 text-left md:grid-cols-[1.4fr_0.9fr_1.1fr]">
-            <div className="space-y-5">
-              <div className="flex items-center gap-3">
-                <Image
-                  src="/legacy-images/logonew.png"
-                  alt="Golden Epoxy logo"
-                  width={64}
-                  height={64}
-                  className="h-16 w-auto object-contain"
-                />
-              </div>
-              <p className="max-w-md text-sm leading-7 text-white/72">
-                Premium epoxy floors for homes and businesses across Tampa Bay. Clean prep,
-                durable systems, and finishes that look intentional in every light.
-              </p>
+          <div className="flex flex-col gap-6 text-left sm:flex-row sm:items-start sm:justify-between">
+            <div>
               <div className="flex items-center gap-2">
                 <a
                   href="https://wa.me/18135800323"
@@ -67,14 +52,11 @@ export default function SiteFooter({ homeLinks = true }: Props) {
                   </svg>
                 </a>
               </div>
-              <ButtonLink href="/contact" className="w-full sm:w-auto">
-                Book an Estimate
-              </ButtonLink>
             </div>
 
             <div>
               <p className="meta-label">Explore</p>
-              <ul className="mt-4 space-y-3 text-sm text-white/78">
+              <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/78">
                 {navLinks.map((link) => (
                   <li key={link.href}>
                     <Link href={link.href} className="hover:text-gold-300">
@@ -85,34 +67,17 @@ export default function SiteFooter({ homeLinks = true }: Props) {
               </ul>
             </div>
 
-            <div className="meta-list">
-              <div>
-                <p className="meta-label">Phone</p>
-                <a href="tel:+18135800323" className="meta-value block text-white">
-                  (813) 580-0323
-                </a>
-              </div>
-              <div className="divider-line" />
-              <div>
-                <p className="meta-label">Hours</p>
-                <p className="meta-value">Mon-Sun 8am-5pm</p>
-              </div>
-              <div className="divider-line" />
-              <div>
-                <p className="meta-label">Email</p>
-                <a
-                  href="mailto:goldenepoxyworks@gmail.com"
-                  className="meta-value block text-white"
-                >
-                  goldenepoxyworks@gmail.com
-                </a>
-              </div>
-            </div>
           </div>
         </div>
 
-        <div className="pt-5 text-center text-xs uppercase tracking-[0.22em] text-white/40">
+        <div className="relative pt-5 text-center text-xs uppercase tracking-[0.22em] text-white/40">
           &copy; {new Date().getFullYear()} Golden Epoxy. All rights reserved.
+          <Link href="/admin" aria-label="Staff tools" title="Staff tools" className="absolute right-0 top-4 flex h-7 w-7 items-center justify-center rounded-full text-white/25 hover:text-gold-300 focus:text-gold-300">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="5" y="10" width="14" height="11" rx="2" />
+              <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+            </svg>
+          </Link>
         </div>
       </div>
     </footer>

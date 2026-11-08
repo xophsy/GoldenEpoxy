@@ -20,6 +20,8 @@ export type FAQ = {
   answer: string;
 };
 
+export const leadEmail = "tampa@goldenepoxy.com";
+
 export const trustBadges: TrustBadge[] = [
   { label: "Over 100", detail: "Installs" },
   { label: "1 Day", detail: "Install" },
@@ -94,26 +96,17 @@ export const coatingOptions: TextCardItem[] = [
   },
 ];
 
-export const processSteps: TextCardItem[] = [
-  {
-    title: "Consult & Plan",
-    description: "We inspect the slab, confirm the finish, and set the plan before installation day.",
-  },
-  {
-    title: "Day 1: Prep, Build & Seal",
-    description: "We grind, repair, prime, build the system, and apply the seal coat in one disciplined install day.",
-  },
-  {
-    title: "Day 2: Cure & Turnover",
-    description: "The floor cures cleanly and is prepped for handoff, with return-to-use timing based on the system selected.",
-  },
+export const processSteps = [
+  { title: "Plan your floor", description: "We assess your concrete, help you choose a finish, and agree on the installation plan." },
+  { title: "Prepare & install", description: "We repair and prepare the concrete, then install your chosen coating." },
+  { title: "Cure & enjoy", description: "We explain when you can walk on your floor, move belongings back, and park your car." },
 ];
 
 export const faqs: FAQ[] = [
   {
     question: "How long does installation take?",
     answer:
-      "Most residential installs are finished within 2 to 3 days total, depending on prep and system selection. Installation typically takes about a day.",
+      "Installation typically takes about a day. Allow 2–3 days total for most residential projects, including preparation and curing; timing depends on the floor and selected system.",
   },
   {
     question: "Will epoxy yellow in the sun?",

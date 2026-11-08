@@ -38,8 +38,15 @@ dev.log
 # vercel
 .vercel
 
+# Superdesign temporary component templates
+.superdesign/tmp/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
 
 .vercel
+
+# python cache and local animation QA renders
+__pycache__/
+/private/crown-quality/

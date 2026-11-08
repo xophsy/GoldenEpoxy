@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { serviceAreaCities, serviceAreaNote } from "@/data/service-area";
 import ContactForm from "@/components/ContactForm";
 import {
   ButtonLink,
@@ -8,6 +8,7 @@ import {
 } from "@/components/design-system";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
+import { leadEmail } from "@/data/siteContent";
 
 export default function ContactPage() {
   return (
@@ -40,10 +41,10 @@ export default function ContactPage() {
                   <div>
                     <p className="meta-label">Email</p>
                     <a
-                      href="mailto:goldenepoxyworks@gmail.com"
+                      href={`mailto:${leadEmail}`}
                       className="meta-value block text-white"
                     >
-                      goldenepoxyworks@gmail.com
+                      {leadEmail}
                     </a>
                   </div>
                   <div className="divider-line" />
@@ -81,19 +82,9 @@ export default function ContactPage() {
 
               <SurfaceCard className="p-6">
                 <p className="meta-label">We Work Across Tampa Bay</p>
-                <div className="mt-5 overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.03]">
-                  <Image
-                    src="/service-area-map.png"
-                    alt="Service area map covering Tampa, St. Petersburg, Clearwater, Brandon, Wesley Chapel, and nearby communities."
-                    width={379}
-                    height={359}
-                    className="h-auto w-full"
-                  />
-                </div>
-                <p className="meta-value mt-4">
-                  Tampa, St. Petersburg, Clearwater, Brandon, Wesley Chapel, and nearby
-                  communities throughout the region.
-                </p>
+                <p className="meta-value mt-4">Based in Tampa, serving homes and businesses in:</p>
+                <ul className="mt-4 grid gap-3 sm:grid-cols-2" aria-label="Communities we serve">{serviceAreaCities.map(city => <li key={city} className="text-sm text-white/85"><span aria-hidden="true" className="mr-2 text-gold-400">↗</span>{city}</li>)}</ul>
+                <p className="mt-5 text-sm leading-relaxed text-white/70">{serviceAreaNote}</p>
                 <div className="mt-6">
                   <ButtonLink href="/gallery" variant="secondary" className="sm:w-auto">
                     See Our Recent Work

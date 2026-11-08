@@ -8,6 +8,7 @@ export const primaryNavLinks: NavLink[] = [
   { label: "Process", href: "#process" },
   { label: "Catalog", href: "/catalog" },
   { label: "Gallery", href: "/gallery" },
+  { label: "About Us", href: "/about" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -17,6 +18,7 @@ export const footerNavLinks: NavLink[] = [
   { label: "Process", href: "#process" },
   { label: "Catalog", href: "/catalog" },
   { label: "Gallery", href: "/gallery" },
+  { label: "About Us", href: "/about" },
   { label: "Contact", href: "/contact" },
 ];
 

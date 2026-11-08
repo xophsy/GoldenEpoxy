@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import styles from "./collection-pages.module.css";
 import type { CatalogCategory, CatalogImage } from "@/lib/catalog";
 
 type CatalogCategoryGroup = {
@@ -61,6 +62,7 @@ function Lightbox({
     const container = containerRef.current;
     if (!container) return;
 
+    const origin = document.activeElement as HTMLElement | null;
     const closeButton = container.querySelector<HTMLElement>("button");
     closeButton?.focus();
 
@@ -85,19 +87,20 @@ function Lightbox({
     };
 
     window.addEventListener("keydown", onTab);
-    return () => window.removeEventListener("keydown", onTab);
+    return () => { window.removeEventListener("keydown", onTab); origin?.focus(); };
   }, []);
 
   return createPortal(
     <div
       ref={containerRef}
-      className="gallery-lightbox"
+      className={`gallery-lightbox ${styles.lightbox}`}
       role="dialog"
       aria-modal="true"
       aria-label="Catalog swatch lightbox"
       onClick={onClose}
     >
       <div className="gallery-lightbox__panel" onClick={(event) => event.stopPropagation()}>
+        {/* Generated full-resolution asset; preserve the original dimensions. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={image.lightbox.src} alt={image.alt} className="gallery-lightbox__img" />
       </div>
@@ -162,6 +165,7 @@ function Lightbox({
         </>
       )}
 
+      <p className={styles.lightboxName}>{image.title} · {image.category} · #{numberLabel(image.number)}</p>
       <div className="gallery-lightbox__counter" aria-live="polite">
         {index + 1} / {images.length}
       </div>
@@ -170,134 +174,35 @@ function Lightbox({
   );
 }
 
+const descriptions: Record<CatalogCategory, string> = {
+  metallic: "Pearlescent pigments with flowing depth. Explore soft neutrals, rich earth tones, and statement colors.",
+  flakes: "Blended vinyl flakes with a textured, terrazzo-like appearance. Find a mix that suits your space.",
+  neon: "Bright accent colors for a more expressive finish. Ask us how to incorporate them into your floor.",
+};
 export default function CatalogGrid({ categories }: Props) {
   const [activeCategory, setActiveCategory] = useState<CatalogCategory>(categories[0]?.key ?? "metallic");
+  const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-
-  const currentCategory = useMemo(
-    () => categories.find((category) => category.key === activeCategory) ?? categories[0],
-    [activeCategory, categories],
-  );
-
-  const images = currentCategory?.images ?? [];
-
-  const open = useCallback((index: number) => setSelectedIndex(index), []);
+  const currentCategory = categories.find((category) => category.key === activeCategory) ?? categories[0];
+  const images = useMemo(() => (currentCategory?.images ?? []).filter(image =>
+    `${image.title} ${image.number ?? ""}`.toLowerCase().includes(query.trim().toLowerCase())
+  ), [currentCategory, query]);
   const close = useCallback(() => setSelectedIndex(null), []);
-  const prev = useCallback(() => {
-    setSelectedIndex((index) => (index !== null ? (index - 1 + images.length) % images.length : null));
-  }, [images.length]);
-  const next = useCallback(() => {
-    setSelectedIndex((index) => (index !== null ? (index + 1) % images.length : null));
-  }, [images.length]);
-
-  if (!currentCategory) {
-    return (
-      <div className="surface-card rounded-3xl p-8">
-        <p className="text-xl font-semibold text-white">No catalog swatches found.</p>
-        <p className="mt-2 text-sm text-white/70">
-          Run <code>npm run catalog:sync</code> then <code>npm run catalog:build</code> to populate the catalog.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <>
-      <div className="flex flex-wrap gap-3" role="tablist" aria-label="Color categories">
-        {categories.map((category) => {
-          const isActive = category.key === activeCategory;
-          return (
-            <button
-              key={category.key}
-              type="button"
-              role="tab"
-              aria-selected={isActive}
-              aria-controls={`catalog-panel-${category.key}`}
-              id={`catalog-tab-${category.key}`}
-              onClick={() => {
-                setSelectedIndex(null);
-                setActiveCategory(category.key);
-              }}
-              className={[
-                "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em]",
-                isActive
-                  ? "border-gold-400/45 bg-gold-400/15 text-gold-300"
-                  : "border-white/15 bg-white/[0.04] text-white/70 hover:border-gold-400/30 hover:text-white",
-              ].join(" ")}
-            >
-              <span>{category.label}</span>
-              <span className="rounded-full bg-black/35 px-2 py-0.5 text-[0.62rem] tracking-[0.12em]">
-                {category.count}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      <div
-        id={`catalog-panel-${currentCategory.key}`}
-        role="tabpanel"
-        aria-labelledby={`catalog-tab-${currentCategory.key}`}
-        className="mt-8"
-      >
-        <div className="mb-5 flex items-center justify-between gap-3">
-          <p className="text-lg font-semibold tracking-[-0.02em] text-white">
-            {currentCategory.label} Collection
-          </p>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/50">
-            {currentCategory.count} colors
-          </p>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {images.map((image, index) => (
-            <button
-              key={image.id}
-              type="button"
-              onClick={() => open(index)}
-              className="surface-card overflow-hidden rounded-2xl border border-white/10 text-left transition hover:border-gold-400/35"
-              aria-label={`Open ${image.title} swatch`}
-            >
-              <picture>
-                <source
-                  type="image/avif"
-                  srcSet={buildSrcSet(image.responsive, "avif")}
-                  sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 25vw"
-                />
-                <source
-                  type="image/webp"
-                  srcSet={buildSrcSet(image.responsive, "webp")}
-                  sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 25vw"
-                />
-                <img
-                  src={image.thumbnail.webp}
-                  alt={image.alt}
-                  width={image.thumbnail.width}
-                  height={image.thumbnail.height}
-                  className="aspect-square h-auto w-full object-cover"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </picture>
-              <div className="flex items-center justify-between gap-3 p-4">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-300/80">
-                    #{numberLabel(image.number)}
-                  </p>
-                  <p className="mt-1 text-sm font-semibold tracking-[-0.01em] text-white">{image.title}</p>
-                </div>
-                <span className="rounded-full border border-white/12 bg-white/[0.04] px-2.5 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-white/55">
-                  {currentCategory.label}
-                </span>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {selectedIndex !== null ? (
-        <Lightbox images={images} index={selectedIndex} onClose={close} onPrev={prev} onNext={next} />
-      ) : null}
-    </>
-  );
+  const prev = useCallback(() => setSelectedIndex(i => i !== null ? (i - 1 + images.length) % images.length : null), [images.length]);
+  const next = useCallback(() => setSelectedIndex(i => i !== null ? (i + 1) % images.length : null), [images.length]);
+  if (!currentCategory) return <p className={styles.empty}>Our finish collection is being updated. Contact us to explore available colors.</p>;
+  return <>
+    <div className={styles.filters}>
+      <div className={styles.categories} aria-label="Finish collections">{categories.map(category => <button type="button" key={category.key} aria-pressed={category.key === activeCategory} onClick={() => {setSelectedIndex(null); setActiveCategory(category.key); setQuery("");}} className={styles.category}>{category.label}<span>{category.count}</span></button>)}</div>
+      <label className={styles.search}>Search this collection<input type="search" value={query} onChange={event => {setSelectedIndex(null); setQuery(event.target.value);}} placeholder="Color name or number" /></label>
+    </div>
+    <div className={styles.toolbar}><h2 className="text-xl font-medium">{currentCategory.label} Collection</h2><p role="status">{images.length} of {currentCategory.count} colors</p></div>
+    <p className={styles.collectionDescription}>{descriptions[currentCategory.key]}</p>
+    {images.length ? <div className={styles.swatchGrid}>{images.map((image, index) => <button key={image.id} type="button" className={styles.swatch} onClick={() => setSelectedIndex(index)} aria-label={`Open ${image.title} swatch`}>
+      <picture><source type="image/avif" srcSet={buildSrcSet(image.responsive,"avif")} sizes="(max-width: 640px) 50vw, (max-width: 900px) 33vw, 25vw" /><source type="image/webp" srcSet={buildSrcSet(image.responsive,"webp")} sizes="(max-width: 640px) 50vw, (max-width: 900px) 33vw, 25vw" />
+        <img src={image.thumbnail.webp} alt="" width={image.thumbnail.width} height={image.thumbnail.height} loading="lazy" decoding="async" />
+      </picture><div className={styles.swatchLabel}><span>{image.title}</span><span>#{numberLabel(image.number)}</span></div>
+    </button>)}</div> : <div className={styles.empty}><p>No colors match “{query}” in this collection.</p><button type="button" className={styles.textLink} onClick={() => setQuery("")}>Clear search</button></div>}
+    {selectedIndex !== null && images[selectedIndex] ? <Lightbox images={images} index={selectedIndex} onClose={close} onPrev={prev} onNext={next} /> : null}
+  </>;
 }
