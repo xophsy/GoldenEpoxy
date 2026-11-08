@@ -17,6 +17,14 @@ Usage:
                                               an animated WebP that plays once and holds its
                                               last frame, plus that last frame as a still
     python crown_drip.py --sheets public      export lossless browser sheets and manifest
+    python crown_drip.py --sheets-ref IMAGE public [START]
+                                              same sheets, grown from a finished dripping crown
+                                              (transparent art, any size, put in the site
+                                              framing): its drips slide out of the band and the
+                                              last frame is that crown. START (transparent crown
+                                              art without drips) is fitted over it and is the
+                                              first frame; a melt front turns it into the
+                                              dripping crown and releases the drips
     python crown_drip.py --logos DIR          write the animation's first and last frame into
                                               DIR as full-resolution transparent PNGs
 """
@@ -564,6 +572,283 @@ class WebLogo:
         return canvas.resize((self.size, self.size), Image.LANCZOS, box=(0, 0, self.span, self.span))
 
 
+# Reference-logo motion (master seconds; the site plays them at about 0.3x, see CrownLogo.tsx)
+RELEASE = 0.3              # the longest drip starts running out from under the plain rim
+MELT = (1.3, 2.1)          # with the drips falling, the plain rim thins up into the drip band
+BULB = 0.6                 # drip progress by which the bulb has grown to full size (it starts as a tip)
+STAGGER = 0.6              # the shortest drip leaves this much after the longest (no twinned start)
+DROP_ZETA = 0.75           # drop spring: clean register, about 3 % overshoot, one visible settle
+DROP_OMEGA = 2.2           # rad/s for the longest drip; shorter drips are quicker (omega ~ 1/sqrt(length))
+
+
+def clean_art(path):
+    """Transparent crown art trimmed to its edges. Lossy WebP alpha tops out near 253 and
+    leaves faint specks, so alpha is stretched to drop both."""
+    art = Image.open(path).convert("RGBA")
+    art.putalpha(art.getchannel("A").point(lut(lambda v: (v - 8) * 255 / 242.0)))
+    return art.crop(art.getchannel("A").getbbox())
+
+
+def framed(art):
+    """Art scaled into the site logo's framing: spans LOGO_LEFT..LOGO_RIGHT, top at LOGO_TOP."""
+    s = (LOGO_RIGHT - LOGO_LEFT) / float(art.width)
+    canvas = Image.new("RGBA", (LOGO_CANVAS, LOGO_CANVAS))
+    canvas.alpha_composite(art.resize((round(art.width * s), round(art.height * s)), Image.LANCZOS),
+                           (LOGO_LEFT, LOGO_TOP))
+    return canvas
+
+
+def fit_start(art, ref):
+    """Start art placed over the reference crown: same width, then the height stretch and
+    nudge whose crown above the drips overlaps the reference's best (searched at half size)."""
+    x0, y0, x1, _ = ref.getchannel("A").getbbox()
+    s = (x1 - x0) / float(art.width)
+    hw, hh = ref.width // 2, int(0.23 * ref.height)
+    solid_ = lambda m: m.point(lambda v: 255 if v > 128 else 0)
+    want = solid_(ref.getchannel("A").resize((hw, ref.height // 2), Image.BILINEAR).crop((0, 0, hw, hh)))
+    best = None
+    for ky in range(-6, 7):
+        m = solid_(art.getchannel("A").resize((round(art.width * s / 2), round(art.height * s * (1 + ky / 100.0) / 2)),
+                                              Image.BILINEAR))
+        for dx in range(-3, 4):
+            for dy in range(-3, 4):
+                c = Image.new("L", (hw, ref.height // 2))
+                c.paste(m, (x0 // 2 + dx, y0 // 2 + dy))
+                c = c.crop((0, 0, hw, hh))
+                both = sum(ImageChops.darker(c, want).histogram()[255:])
+                either = sum(ImageChops.lighter(c, want).histogram()[255:])
+                score = both / float(max(1, either))
+                if best is None or score > best[0]:
+                    best = (score, ky, dx, dy)
+    score, ky, dx, dy = best
+    print("start crown fit: overlap %.3f, height %+d%%, nudge %d,%d px" % (score, ky, 2 * dx, 2 * dy))
+    canvas = Image.new("RGBA", ref.size)
+    canvas.alpha_composite(art.resize((round(art.width * s), round(art.height * s * (1 + ky / 100.0))), Image.LANCZOS),
+                           (x0 + 2 * dx, y0 + 2 * dy))
+    return canvas
+
+
+class RefLogo:
+    """Frames grown from a finished reference logo instead of the traced source.
+
+    The crown and its main band are the reference's in every frame. With a start crown, the
+    first frame swaps only the reference's drip band for the start art's plain rim (rim_swap).
+    Each drip grows neck first, its bulb starting as a small tip, on a damped spring: long
+    drips leave first and land last. They run out from under the plain rim, and only once
+    they are falling does the rim thin up into the drip band over MELT,
+    so its scalloped edge never shows without drips under it. The last frame is the
+    reference itself.
+
+    Nothing is cross-faded, so the two crowns never show double edges.
+    """
+
+    def __init__(self, path, size, start=None):
+        self.size = size
+        ref = framed(clean_art(path))
+        w, h = ref.size
+        ap = ref.getchannel("A").load()
+
+        def low(x):
+            for y in range(h - 1, -1, -1):
+                if ap[x, y] > 8:
+                    return y
+            return -1
+
+        # the band's bottom edge: exact on the columns that end on it (gaps between drips),
+        # interpolated straight across each drip's root;
+        # shortcut: the 0.48..0.55 window fits the site-framed 1024 logo, re-check it for other art
+        lows = [low(x) for x in range(w)]
+        gaps = [x for x in range(w) if 0.48 * h < lows[x] < 0.55 * h]
+        cut = [h] * w
+        for a, b in zip(gaps, gaps[1:]):
+            for x in range(a, b + 1):
+                cut[x] = lows[a] + (lows[b] - lows[a]) * (x - a) / float(b - a)
+
+        # drips: connected opaque pixels under the band edge, taller than the edge's own wobble
+        seen = [[False] * w for _ in range(h)]
+        holes = Image.new("L", (w, h), 0)
+        hp = holes.load()
+        self.drips = []
+        for sx in range(w):
+            for sy in range(h):
+                if seen[sy][sx] or ap[sx, sy] <= 8 or sy <= cut[sx]:
+                    continue
+                seen[sy][sx] = True
+                stack, region = [(sx, sy)], []
+                while stack:
+                    x, y = stack.pop()
+                    region.append((x, y))
+                    for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                        if 0 <= nx < w and 0 <= ny < h and not seen[ny][nx] and ap[nx, ny] > 8 and ny > cut[nx]:
+                            seen[ny][nx] = True
+                            stack.append((nx, ny))
+                x0, x1 = min(p[0] for p in region), max(p[0] for p in region) + 1
+                y0, y1 = min(p[1] for p in region), max(p[1] for p in region) + 1
+                if y1 - y0 < 20:
+                    continue
+                mask = Image.new("L", (x1 - x0, y1 - y0), 0)
+                mp = mask.load()
+                for x, y in region:
+                    mp[x - x0, y - y0] = 255
+                    hp[x, y] = 255
+                piece = ref.crop((x0, y0, x1, y1))
+                piece.putalpha(ImageChops.multiply(piece.getchannel("A"), mask))
+                # neck / bulb split: up from the bulb's widest row to where it narrows to 3/4
+                pa = piece.getchannel("A").load()
+                widths = [sum(1 for x in range(x1 - x0) if pa[x, y] > 128) for y in range(y1 - y0)]
+                widest = max(range((y1 - y0) // 2, y1 - y0), key=lambda y: widths[y])
+                b0 = widest
+                while b0 > 0 and widths[b0 - 1] > 0.75 * widths[widest]:
+                    b0 -= 1
+                self.drips.append(dict(img=piece, at=(x0, y0), length=y1 - y0, b0=b0,
+                                       neck=widths[max(0, b0 - 1)] / float(max(1, widths[widest]))))
+        if len(self.drips) < 5:
+            raise SystemExit("found %d drips: the band edge fit missed" % len(self.drips))
+
+        longest = max(d["length"] for d in self.drips)
+        shortest = min(d["length"] for d in self.drips)
+        for d in self.drips:
+            d["omega"] = DROP_OMEGA * math.sqrt(longest / float(d["length"]))
+        self.rim = self.start = None
+        if start:
+            self.start = self.rim_swap(ref, fit_start(clean_art(start), ref), cut)
+            # rows above the swapped rim (less the resize kernel's reach) never change
+            self.fixed_rows = int((min(self.stripe) - 8) * size / float(h))
+        for d in self.drips:
+            # longest first, the shortest STAGGER later (no twinned start)
+            d["tr"] = RELEASE + STAGGER * (longest - d["length"]) / float(max(1, longest - shortest))
+            settle = DROP_ZETA * d["omega"] * (DUR - d["tr"])
+            assert settle > 6.3, "drip at x=%d cannot settle by the last frame" % d["at"][0]
+        self.static = ref.copy()
+        self.static.putalpha(ImageChops.subtract(ref.getchannel("A"), holes))
+
+        # self-check: the finished frame is the reference, the first one the start crown
+        # compared as seen (over grey): fully transparent pixels may carry any colour
+        seen_ = lambda im: Image.alpha_composite(Image.new("RGBA", im.size, (128, 128, 128, 255)), im)
+        drift = lambda a, b: max(hi for _, hi in ImageChops.difference(seen_(a), seen_(b)).getextrema())
+        assert drift(self.frame(DUR), ref.resize((size, size), Image.LANCZOS)) <= 2, "last frame drifted"
+        if self.start:
+            assert drift(self.frame(0), self.start.resize((size, size), Image.LANCZOS)) <= 2, "first frame drifted"
+        print("reference logo: %d drips, lengths %d..%d px" % (len(self.drips), shortest, longest))
+
+    def rim_swap(self, ref, art, cut):
+        """The reference with its drip band replaced by the start art's plain rim.
+
+        Both crowns have a see-through stripe between the main band and the lower rim. The
+        seam runs along the middle of the reference's stripe, so it never shows, and the
+        rim is shifted to sit as far under the band as it does in its own art."""
+        w, h = ref.size
+        ra, aa = ref.getchannel("A").load(), art.getchannel("A").load()
+
+        def stripe(a, bottom):
+            found = {}
+            for x in range(w):
+                if bottom[x] >= h:
+                    continue
+                y = int(bottom[x]) - 3
+                while y > 0 and a[x, y] > 64:        # up through the rim
+                    y -= 1
+                top = y
+                while y > 0 and a[x, y] <= 64:       # up through the stripe
+                    y -= 1
+                if 2 <= top - y <= 14:
+                    found[x] = (top + y) / 2.0
+            return found
+
+        art_low = [next((y for y in range(h - 1, -1, -1) if aa[x, y] > 8), h) if cut[x] < h else h
+                   for x in range(w)]
+        ours, theirs = stripe(ra, cut), stripe(aa, art_low)
+        both = sorted(ours[x] - theirs[x] for x in ours if x in theirs)
+        assert len(both) > 100, "no stripe under the band in both crowns"
+        dy = int(round(both[len(both) // 2]))
+        xs = sorted(ours)
+        raw = [ours[min(xs, key=lambda k: abs(k - x))] for x in range(w)]
+        line = [sorted(raw[max(0, x - 6):x + 7])[len(raw[max(0, x - 6):x + 7]) // 2] for x in range(w)]
+        self.stripe = [line[x] for x in xs]
+        lower = Image.new("L", (w, h), 0)
+        x0, x1 = xs[0] - 6, xs[-1] + 6                 # the rim's rounded ends reach a little past
+        ImageDraw.Draw(lower).polygon([(x, line[x]) for x in range(x0, x1 + 1)] + [(x1, h), (x0, h)], fill=255)
+        rim = Image.new("RGBA", (w, h))
+        rim.alpha_composite(art, (0, dy))
+        rim.putalpha(ImageChops.multiply(rim.getchannel("A"), lower))
+        frame = ref.copy()
+        frame.putalpha(ImageChops.subtract(ref.getchannel("A"), lower))
+        frame.alpha_composite(rim)
+        # the rim melts by thinning up to the stripe; the drip band shows only where it has
+        # gone, so its bottom starts below whichever of the two reaches lower
+        rp, bp = rim.getchannel("A").load(), ref.getchannel("A").load()
+        self.rim, self.rim_x = rim, (x0, x1)
+        self.rim_top = line
+        self.rim_bottom = [max(next((y for y in range(h - 1, int(line[x]), -1) if rp[x, y] > 8), int(line[x])),
+                               next((y for y in range(min(h - 1, int(cut[x]) + 2), int(line[x]), -1)
+                                     if bp[x, y] > 8), int(line[x]))) + 3
+                           for x in range(w)]
+        print("start rim: swapped under the band for x %d..%d, shifted %+d px" % (x0, x1, dy))
+        return frame
+
+    def rim_cover(self, u):
+        """L mask of the plain rim's area, thinned up toward the stripe by u (0: whole, 1: gone)."""
+        x0, x1 = self.rim_x
+        # top: the exact seam rim_swap cut along; the 1024 -> 480 resize anti-aliases the edge
+        top = [(x, self.rim_top[x]) for x in range(x0, x1 + 1)]
+        edge = [(x, self.rim_top[x] + (self.rim_bottom[x] - self.rim_top[x]) * (1 - u)) for x in range(x0, x1 + 1)]
+        cover = Image.new("L", self.rim.size, 0)
+        ImageDraw.Draw(cover).polygon(top + edge[::-1], fill=255)
+        return cover
+
+    def drip_progress(self, d, t):
+        """0 before release, then a damped spring to 1 (about 3 % overshoot)."""
+        tau = t - d["tr"]
+        if tau <= 0:
+            return 0.0
+        wz = DROP_ZETA * d["omega"]
+        wd = d["omega"] * math.sqrt(1 - DROP_ZETA ** 2)
+        x = 1 - math.exp(-wz * tau) * (math.cos(wd * tau) + wz / wd * math.sin(wd * tau))
+        return 1.0 if abs(x - 1) * d["length"] < 0.25 else x
+
+    def drip_length(self, d, t):
+        return d["length"] * self.drip_progress(d, t)
+
+    def frame(self, t):
+        canvas = self.static.copy()
+        melting = self.rim is not None and t < MELT[1]
+        if melting:
+            # the drip band shows only where the plain rim has already thinned away
+            cover = self.rim_cover(smoothstep(MELT[0], MELT[1], t))
+            canvas.putalpha(ImageChops.subtract(canvas.getchannel("A"), cover))
+        self.draw_drips(canvas, t)
+        if melting:
+            # drips run out from under the plain rim
+            rim = self.rim.copy()
+            rim.putalpha(ImageChops.multiply(rim.getchannel("A"), cover))
+            canvas.alpha_composite(rim)
+        return canvas.resize((self.size, self.size), Image.LANCZOS)
+
+    def draw_drips(self, canvas, t):
+        for d in self.drips:
+            x = self.drip_progress(d, t)
+            if x <= 0:
+                continue
+            img, b0 = d["img"], d["b0"]
+            # the neck pours from the band (joint first) and stretches on overshoot
+            n = int(round(b0 * x))
+            if n > 0:
+                neck = img.crop((0, 0, img.width, min(n, b0)))
+                if n > b0:
+                    neck = neck.resize((img.width, n), Image.LANCZOS)
+                canvas.alpha_composite(neck, d["at"])
+            # the bulb rides the neck's end: a neck-wide tip at first, full size by BULB
+            s = smoothstep(0.0, BULB, x)
+            bulb = img.crop((0, b0, img.width, img.height))
+            if s < 1:
+                bw = max(1, int(round(bulb.width * (d["neck"] + (1 - d["neck"]) * s))))
+                bh = int(round(bulb.height * s))
+                if bh < 1:
+                    continue
+                bulb = bulb.resize((bw, bh), Image.LANCZOS)
+            canvas.alpha_composite(bulb, (d["at"][0] + (img.width - bulb.width) // 2, d["at"][1] + n))
+
+
 def write_web(scene, outdir):
     logo = WebLogo(scene)
     total = int(round(DUR / WEB_SPEED * WEB_FPS))
@@ -582,11 +867,11 @@ def write_web(scene, outdir):
         print("wrote %s  %.0f KB" % (path, os.path.getsize(path) / 1024.0))
 
 
-def write_sheets(scene, outdir):
+def write_sheets(make_logo, outdir):
     """Lossless 480px / 30fps browser assets, four bounded 1920 x 2880px PNG sheets."""
     os.makedirs(outdir, exist_ok=True)
     size, columns, per_sheet = 480, 4, 24
-    logo = WebLogo(scene, size)
+    logo = make_logo(size)
     total = int(DUR / WEB_SPEED * WEB_FPS) + 1
     urls, ends = [], []
     first = last = None
@@ -599,7 +884,7 @@ def write_sheets(scene, outdir):
             index = offset + local_index
             frame = logo.frame(index / WEB_FPS * WEB_SPEED)
             # A fixed upper-crown crop must be byte-identical throughout playback.
-            fixed = frame.crop((0, 0, size, 220)).tobytes()
+            fixed = frame.crop((0, 0, size, getattr(logo, "fixed_rows", 220))).tobytes()
             if upper is None:
                 upper = fixed
             assert fixed == upper, "Stationary crown moved between frames"
@@ -608,14 +893,14 @@ def write_sheets(scene, outdir):
             last = frame
             sheet.paste(frame, ((local_index % columns) * size, (local_index // columns) * size))
             ends.append(round((index + 1) * 1000 / WEB_FPS))
-        name = "goldenepoxy-crown-v3-%d.png" % len(urls)
+        name = "goldenepoxy-crown-v5-%d.png" % len(urls)
         sheet.save(os.path.join(outdir, name), optimize=True)
         urls.append("/" + name)
         print("wrote", name, flush=True)
-    first.save(os.path.join(outdir, "goldenepoxy-crown-v3-start.png"), optimize=True)
-    last.save(os.path.join(outdir, "goldenepoxy-crown-v3-still.png"), optimize=True)
+    first.save(os.path.join(outdir, "goldenepoxy-crown-v5-start.png"), optimize=True)
+    last.save(os.path.join(outdir, "goldenepoxy-crown-v5-still.png"), optimize=True)
     manifest = dict(size=size, columns=columns, perSheet=per_sheet, sheets=urls, frameEnds=ends,
-                    start="/goldenepoxy-crown-v3-start.png", still="/goldenepoxy-crown-v3-still.png")
+                    start="/goldenepoxy-crown-v5-start.png", still="/goldenepoxy-crown-v5-still.png")
     with open(os.path.join(HERE, "components", "crown-frames.json"), "w") as f:
         json.dump(manifest, f, indent=2)
         f.write("\n")
@@ -638,11 +923,16 @@ def write_logos(scene, outdir, margin=0.04):
 
 
 def main():
+    if len(sys.argv) >= 4 and sys.argv[1] == "--sheets-ref":
+        start = sys.argv[4] if len(sys.argv) >= 5 else None
+        write_sheets(lambda size: RefLogo(sys.argv[2], size, start), os.path.abspath(sys.argv[3]))
+        return
+
     scene = Scene()
     print("arc fitted; rim spans x = %.1f .. %.1f" % (scene.xa, scene.xb))
 
     if len(sys.argv) >= 3 and sys.argv[1] == "--sheets":
-        write_sheets(scene, os.path.abspath(sys.argv[2]))
+        write_sheets(lambda size: WebLogo(scene, size), os.path.abspath(sys.argv[2]))
         return
 
     if len(sys.argv) >= 3 and sys.argv[1] == "--logos":

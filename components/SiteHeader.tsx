@@ -86,11 +86,11 @@ export default function SiteHeader({ homeLinks = true, overlayHero = false }: Pr
           <div className="site-header__wordmark absolute left-[137px] top-1/2 -translate-y-1/2 z-10">
             <Link href="/" onClick={handleLogoClick}>
               <Image
-                src="/goldenepoxy-wordmark-v3.png"
+                src="/goldenepoxy-wordmark-v4.png"
                 alt="Golden Epoxy"
-                width={400}
-                height={150}
-                className="h-[115px] w-auto object-contain"
+                width={753}
+                height={215}
+                className="h-[54px] w-auto object-contain"
               />
             </Link>
           </div>
