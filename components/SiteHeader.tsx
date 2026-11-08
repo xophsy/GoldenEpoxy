@@ -1,7 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Image from "next/image";
+import CrownLogo from "@/components/CrownLogo";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -59,56 +59,47 @@ export default function SiteHeader({ homeLinks = true, overlayHero = false }: Pr
     <>
       <header
         className={cx(
-          "top-0 z-50 px-3 md:px-4",
+          "site-header top-0 z-50 px-3 md:px-4",
           overlayHero ? "fixed inset-x-0 pt-3" : "sticky pt-3",
         )}
       >
         <nav
           className={cx(
-            "content-shell relative flex justify-between items-center overflow-visible rounded-[1.75rem] px-4 h-[5.5rem]",
+            "site-header__nav content-shell relative flex justify-between items-center overflow-visible rounded-[1.75rem] px-4 h-[5.5rem]",
             scrolledPastHero || mobileOpen
               ? "glass border border-white/10 bg-coal-900/78 shadow-[0_18px_40px_rgba(0,0,0,0.22)]"
               : "glass border border-white/10 bg-coal-900/24 shadow-[0_12px_30px_rgba(0,0,0,0.16)]",
           )}
         >
           {/* Crown — absolutely anchored to nav pill, never affected by layout */}
-          <div className="absolute -left-2 top-1/2 -translate-y-[28%] z-10 overflow-visible">
-            <motion.div
-              whileHover={{ scale: 1.12 }}
-              whileTap={{ scale: 1.12 }}
-              transition={{ type: "spring", stiffness: 360, damping: 24, mass: 0.45 }}
-              style={{ transformOrigin: "center center" }}
-            >
+          {/* The rim's lowest point is 54% down the image: bottom-0 plus a 46% shift puts it on the
+              bar's bottom edge at any size, so the crown rests on the bar and only the drips hang below. */}
+          <div className="site-header__crown absolute -left-2 bottom-0 translate-y-[46%] z-10 overflow-visible">
+            <div>
               <Link href="/" onClick={handleLogoClick} className="block overflow-visible">
-                <Image
-                  src="/legacy-images/logonew.png"
-                  alt="Golden Epoxy logo"
-                  width={175}
-                  height={175}
-                  className="h-[170px] w-auto object-contain drop-shadow-[0_10px_18px_rgba(0,0,0,0.35)]"
-                />
+                <CrownLogo />
               </Link>
-            </motion.div>
+            </div>
           </div>
 
           {/* Wordmark — absolutely positioned like the crown, independent of flex layout */}
-          <div className="absolute left-[110px] top-1/2 -translate-y-[40%] z-10">
+          <div className="site-header__wordmark absolute left-[137px] top-1/2 -translate-y-1/2 z-10">
             <Link href="/" onClick={handleLogoClick}>
               <Image
-                src="/legacy-images/logo-text.png"
+                src="/goldenepoxy-wordmark-v3.png"
                 alt="Golden Epoxy"
                 width={400}
                 height={150}
-                className="h-[115px] w-auto object-contain mix-blend-screen"
+                className="h-[115px] w-auto object-contain"
               />
             </Link>
           </div>
           {/* Spacer to push right side into position */}
           <div className="flex-1" />
           {/* Right side — always flex, content switches at lg */}
-          <div className="flex items-center gap-8">
+          <div className="site-header__actions relative z-20 flex items-center gap-8">
             {/* Desktop nav links */}
-            <ul className="hidden lg:flex items-center gap-7 text-sm text-white/72">
+            <ul className="hidden xl:flex items-center gap-7 text-sm text-white/72">
               {navLinks.map((link) => (
                 <li key={link.href}>
                   <Link className="hover:text-gold-300" href={link.href}>
@@ -118,13 +109,13 @@ export default function SiteHeader({ homeLinks = true, overlayHero = false }: Pr
               ))}
             </ul>
             {/* Free Quote tablet only (sm–lg) */}
-            <div className="hidden sm:block lg:hidden">
+            <div className="hidden sm:block xl:hidden">
               <ButtonLink href="/contact" className="!w-auto !min-h-0 !py-2.5 !px-5 !text-[0.65rem]">
                 Free Quote
               </ButtonLink>
             </div>
             {/* Free Quote desktop */}
-            <div className="hidden lg:block">
+            <div className="hidden xl:block">
               <ButtonLink href="/contact" className="w-auto">
                 Free Quote
               </ButtonLink>
@@ -133,11 +124,12 @@ export default function SiteHeader({ homeLinks = true, overlayHero = false }: Pr
             <button
               type="button"
               className={cx(
-                "button-ghost flex h-11 w-11 items-center justify-center rounded-2xl lg:hidden",
+                "button-ghost flex h-11 w-11 items-center justify-center rounded-2xl xl:hidden",
                 mobileOpen && "border-gold-300/40 bg-white/8",
               )}
-              aria-label="Open menu"
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileOpen}
+              aria-controls="site-mobile-menu"
               onClick={() => setMobileOpen((prev) => !prev)}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -147,7 +139,7 @@ export default function SiteHeader({ homeLinks = true, overlayHero = false }: Pr
           </div>
         </nav>
         {mobileOpen ? (
-          <div className="content-shell glass mt-3 rounded-[1.75rem] border border-white/10 bg-coal-900/86 p-3 shadow-[0_18px_40px_rgba(0,0,0,0.22)] lg:hidden">
+          <div id="site-mobile-menu" className="site-header__menu content-shell glass mt-3 rounded-[1.75rem] border border-white/10 bg-coal-900/86 p-3 shadow-[0_18px_40px_rgba(0,0,0,0.22)] xl:hidden">
             <ul className="space-y-2">
               {navLinks.map((link) => (
                 <li key={link.href}>

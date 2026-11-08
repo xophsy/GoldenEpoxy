@@ -1,10 +1,10 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import emailjs from "@emailjs/browser";
 import Image from "next/image";
-import { type FormEvent, useMemo, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 import { cx } from "@/components/design-system";
+import { leadEmail } from "@/data/siteContent";
 
 /* ── Multi-choice question data ───────────────────────── */
 
@@ -70,7 +70,9 @@ type FormState = {
   name: string;
   phone: string;
   email: string;
+  location: string;
   message: string;
+  website: string;
 };
 
 const initialState: FormState = {
@@ -81,7 +83,9 @@ const initialState: FormState = {
   name: "",
   phone: "",
   email: "",
+  location: "",
   message: "",
+  website: "",
 };
 
 /* ── Animations ───────────────────────────────────────── */
@@ -98,18 +102,10 @@ export default function ContactForm() {
   const [form, setForm] = useState<FormState>(initialState);
   const [step, setStep] = useState(0);
   const [sending, setSending] = useState(false);
-  const [submissionMode, setSubmissionMode] = useState<"emailjs" | "mailto" | null>(null);
+  const [submissionMode, setSubmissionMode] = useState<"resend" | "mailto" | null>(null);
   const [error, setError] = useState("");
+  const submissionId = useRef("");
   const totalSteps = questions.length + 1; // multi-choice steps + final details step
-  const emailJsConfig = useMemo(
-    () => ({
-      serviceId: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID ?? "",
-      templateId: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID ?? "",
-      autoReplyTemplateId: process.env.NEXT_PUBLIC_EMAILJS_AUTOREPLY_TEMPLATE_ID ?? "",
-      publicKey: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY ?? "",
-    }),
-    [],
-  );
 
   const update = (field: keyof FormState, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -132,16 +128,14 @@ export default function ContactForm() {
     .map(({ label, answer }) => `${label}: ${answer}`)
     .join("\n");
   const projectDetails = [
+    `Project city or ZIP code: ${form.location.trim() || "Not provided"}`,
     `Look / system: ${form.style || "Not selected"}`,
     `Space: ${form.space || "Not selected"}`,
     `Size: ${form.size || "Not selected"}`,
     `Timeline: ${form.timeline || "Not selected"}`,
     `Anything else: ${form.message.trim() || "None"}`,
   ].join("\n");
-  const hasEmailJsConfig = Boolean(
-    emailJsConfig.serviceId && emailJsConfig.templateId && emailJsConfig.publicKey,
-  );
-  const fallbackMailtoHref = `mailto:goldenepoxyworks@gmail.com?subject=${encodeURIComponent(
+  const fallbackMailtoHref = `mailto:${leadEmail}?subject=${encodeURIComponent(
     `Free estimate request from ${form.name.trim() || "Website visitor"}`,
   )}&body=${encodeURIComponent(
     [
@@ -162,59 +156,24 @@ export default function ContactForm() {
     setSending(true);
     setError("");
 
-    if (!hasEmailJsConfig) {
-      if (typeof window !== "undefined") {
-        window.location.href = fallbackMailtoHref;
-      }
-
-      setSending(false);
-      setSubmissionMode("mailto");
-      return;
-    }
-
-    const templateParams = {
-      name: form.name.trim(),
-      from_name: form.name.trim(),
-      reply_to: form.email.trim(),
-      phone: form.phone.trim() || "Not provided",
-      email: form.email.trim(),
-      phone_or_email: `${form.phone.trim()} / ${form.email.trim()}`,
-      system: form.style || "Not selected",
-      details: projectDetails,
-      space: form.space || "Not selected",
-      size: form.size || "Not selected",
-      style: form.style || "Not selected",
-      timeline: form.timeline || "Not selected",
-      project_summary: projectSummary,
-      message: form.message.trim() || "None",
-      submitted_at: new Date().toLocaleString(),
-    };
-
     try {
-      await emailjs.send(
-        emailJsConfig.serviceId,
-        emailJsConfig.templateId,
-        templateParams,
-        emailJsConfig.publicKey,
-      );
-
-      if (emailJsConfig.autoReplyTemplateId) {
-        try {
-          await emailjs.send(
-            emailJsConfig.serviceId,
-            emailJsConfig.autoReplyTemplateId,
-            templateParams,
-            emailJsConfig.publicKey,
-          );
-        } catch (autoReplyError) {
-          // Don't block lead capture if the courtesy autoresponder has a template issue.
-          console.error("EmailJS autoresponse failed", autoReplyError);
-        }
+      if (!submissionId.current) {
+        submissionId.current = crypto.randomUUID();
       }
 
-      setSubmissionMode("emailjs");
+      const response = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, submissionId: submissionId.current }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Lead submission failed");
+      }
+
+      setSubmissionMode("resend");
     } catch {
-      setError("Something went wrong — please try calling us instead.");
+      setError("We couldn't send your request. Please try again, email us, or call instead.");
     } finally {
       setSending(false);
     }
@@ -237,10 +196,10 @@ export default function ContactForm() {
             </svg>
           </div>
           <h3 className="text-xl font-semibold text-white mb-2">
-            {submissionMode === "emailjs" ? "We got your request!" : "Your estimate email is ready"}
+            {submissionMode === "resend" ? "We got your request!" : "Your estimate email is ready"}
           </h3>
           <p className="text-sm text-white/50">
-            {submissionMode === "emailjs" ? (
+            {submissionMode === "resend" ? (
               <>
                 We&apos;ll be in touch within one business day. If you need us sooner, call or text{" "}
                 <a href="tel:+18135800323" className="text-gold-400">(813) 580-0323</a>.
@@ -369,6 +328,18 @@ export default function ContactForm() {
               </p>
 
               <form onSubmit={handleSubmit} className="grid gap-5 sm:grid-cols-2">
+                <div className="absolute -left-[10000px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
+                  <label htmlFor="website">Website</label>
+                  <input
+                    id="website"
+                    name="website"
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={form.website}
+                    onChange={(e) => update("website", e.target.value)}
+                  />
+                </div>
                 <div className="field-shell">
                   <label className="field-label" htmlFor="name">
                     Your Name
@@ -417,6 +388,10 @@ export default function ContactForm() {
                   />
                 </div>
 
+                <div className="field-shell">
+                  <label className="field-label" htmlFor="location">Project city or ZIP code <span className="text-white/60 font-normal">(optional)</span></label>
+                  <input id="location" name="location" type="text" maxLength={100} value={form.location} onChange={e => update("location", e.target.value)} placeholder="e.g. Tampa or 33602" className="field-input" />
+                </div>
                 <div className="field-shell sm:col-span-2">
                   <label className="field-label" htmlFor="message">
                     Anything else? <span className="text-white/30 font-normal">(optional)</span>
@@ -433,7 +408,13 @@ export default function ContactForm() {
 
                 <div className="sm:col-span-2 space-y-4">
                   {error && (
-                    <p className="text-sm text-red-400">{error}</p>
+                    <p className="text-sm text-red-400">
+                      {error}{" "}
+                      <a href={fallbackMailtoHref} className="text-gold-400 underline underline-offset-2">
+                        Email us directly
+                      </a>
+                      .
+                    </p>
                   )}
                   <div className="flex flex-wrap gap-3">
                     <button type="submit" disabled={sending} className="button-base button-primary sm:w-auto disabled:opacity-50">

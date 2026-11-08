@@ -1,8 +1,3 @@
-"use client";
-
-import { useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-
 const GOOGLE_REVIEW_URL = "https://share.google/i1OkVsiyHWqzYPYcw";
 
 const REVIEWS = [
@@ -24,24 +19,7 @@ const REVIEWS = [
     text: "Carlos and his team are the best in town. Very honest and straightforward business. They really make you feel like family and most importantly they pay attention to details which is important for this kind of work.",
     source: "Google Review",
   },
-  {
-    name: "Carlos Alberto Martinez",
-    initials: "CM",
-    text: "Top-quality work. Very responsible, professional, and with excellent customer service. Their experience and commitment to every detail are evident. I will definitely work with them again and highly recommend them.",
-    source: "Google Review",
-  },
-  {
-    name: "Coach Annalee",
-    initials: "CA",
-    text: "Carlos is very professional and trustworthy. He knows what he is doing and works hard to make sure the job is done very well. I definitely recommend him for your next project.",
-    source: "Google Review",
-  },
-  {
-    name: "Luz Ospina",
-    initials: "LO",
-    text: "Golden Epoxy is an excellent company. He performed work in my family business office. The floor was more than shiny. The personnel are very professional and work in a timely manner.",
-    source: "Google Review",
-  },
+
 ];
 
 function StarRow() {
@@ -67,182 +45,39 @@ function GoogleIcon() {
   );
 }
 
-function ChevronLeft() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="m15 18-6-6 6-6" />
-    </svg>
-  );
-}
-
-function ChevronRight() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="m9 18 6-6-6-6" />
-    </svg>
-  );
-}
-
-function QuoteIcon() {
-  return (
-    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="reviews-carousel__quote-icon">
-      <path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z" />
-      <path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z" />
-    </svg>
-  );
-}
-
 export default function ReviewsCarousel() {
-  const [active, setActive] = useState(0);
-  const [direction, setDirection] = useState(1);
-
-  const go = useCallback((index: number) => {
-    setDirection(index > active ? 1 : -1);
-    setActive(index);
-  }, [active]);
-
-  const prev = useCallback(() => go((active - 1 + REVIEWS.length) % REVIEWS.length), [active, go]);
-  const next = useCallback(() => go((active + 1) % REVIEWS.length), [active, go]);
-
-  const review = REVIEWS[active];
-
-  // 3 thumbnail previews (next ones after active)
-  const thumbIndices = [1, 2, 3].map((offset) => (active + offset) % REVIEWS.length);
-
-  const variants = {
-    enter: (dir: number) => ({ opacity: 0, x: dir > 0 ? 40 : -40 }),
-    center: { opacity: 1, x: 0 },
-    exit: (dir: number) => ({ opacity: 0, x: dir > 0 ? -40 : 40 }),
-  };
-
   return (
-    <section className="reviews-carousel-section">
-      {/* Ambient glows */}
-      <div className="reviews-carousel__glow reviews-carousel__glow--left" aria-hidden />
-      <div className="reviews-carousel__glow reviews-carousel__glow--right" aria-hidden />
-
+    <section id="reviews" className="reviews-carousel-section" aria-labelledby="reviews-heading">
       <div className="content-shell">
-        {/* Header */}
-        <motion.div
-          className="reviews-carousel__header"
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-        >
+        <div className="reviews-carousel__header">
           <p className="section-eyebrow">Reviews</p>
-          <h2 className="section-title">
-            What customers are<br />saying on Google.
+          <h2 id="reviews-heading" className="section-title">
+            What customers are saying on Google.
           </h2>
-        </motion.div>
-
-        {/* Carousel area */}
-        <div className="reviews-carousel__stage">
-
-          {/* Prev arrow — desktop */}
-          <button
-            className="reviews-carousel__arrow reviews-carousel__arrow--prev"
-            onClick={prev}
-            aria-label="Previous review"
-          >
-            <ChevronLeft />
-          </button>
-
-          {/* Main card */}
-          <div className="reviews-carousel__card-wrap" aria-live="polite" aria-atomic="true">
-            <AnimatePresence mode="wait" custom={direction}>
-              <motion.div
-                key={active}
-                className="reviews-carousel__card"
-                custom={direction}
-                variants={variants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <QuoteIcon />
-
-                <blockquote className="reviews-carousel__blockquote">
-                  &ldquo;{review.text}&rdquo;
-                </blockquote>
-
-                <div className="reviews-carousel__meta">
-                  <div className="reviews-carousel__author">
-                    <div className="reviews-carousel__initials" aria-hidden="true">
-                      {review.initials}
-                    </div>
-                    <div>
-                      <p className="reviews-carousel__name">{review.name}</p>
-                      <div className="reviews-carousel__source">
-                        <GoogleIcon />
-                        <span>{review.source}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <StarRow />
+        </div>
+        <div className="reviews-carousel__grid compact-card-track" tabIndex={0} role="region" aria-label="Customer reviews">
+          {REVIEWS.map((review) => (
+            <figure key={review.name} className="reviews-carousel__card">
+              <StarRow />
+              <blockquote className="reviews-carousel__blockquote">
+                &ldquo;{review.text}&rdquo;
+              </blockquote>
+              <figcaption className="reviews-carousel__author">
+                <div className="reviews-carousel__initials" aria-hidden="true">
+                  {review.initials}
                 </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          {/* Next arrow — desktop */}
-          <button
-            className="reviews-carousel__arrow reviews-carousel__arrow--next"
-            onClick={next}
-            aria-label="Next review"
-          >
-            <ChevronRight />
-          </button>
+                <div>
+                  <p className="reviews-carousel__name">{review.name}</p>
+                  <div className="reviews-carousel__source">
+                    <GoogleIcon />
+                    <span>{review.source}</span>
+                  </div>
+                </div>
+              </figcaption>
+            </figure>
+          ))}
         </div>
-
-        {/* Tab indicators + mobile arrows */}
-        <div className="reviews-carousel__controls">
-          <div className="reviews-carousel__tabs" role="tablist" aria-label="Review navigation">
-            {REVIEWS.map((_, i) => (
-              <button
-                key={i}
-                role="tab"
-                aria-selected={i === active}
-                aria-label={`Review ${i + 1}`}
-                className="reviews-carousel__tab"
-                data-active={i === active ? "true" : "false"}
-                onClick={() => go(i)}
-              />
-            ))}
-          </div>
-
-          {/* Mobile arrows */}
-          <div className="reviews-carousel__mobile-arrows">
-            <button className="reviews-carousel__arrow" onClick={prev} aria-label="Previous review">
-              <ChevronLeft />
-            </button>
-            <button className="reviews-carousel__arrow" onClick={next} aria-label="Next review">
-              <ChevronRight />
-            </button>
-          </div>
-        </div>
-
-        {/* Desktop thumbnail previews */}
-        <div className="reviews-carousel__thumbs">
-          {thumbIndices.map((idx) => {
-            const r = REVIEWS[idx];
-            return (
-              <button
-                key={idx}
-                className="reviews-carousel__thumb"
-                onClick={() => go(idx)}
-                aria-label={`Jump to ${r.name}'s review`}
-              >
-                <StarRow />
-                <p className="reviews-carousel__thumb-text">&ldquo;{r.text}&rdquo;</p>
-                <p className="reviews-carousel__thumb-name">— {r.name}</p>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* CTA */}
+        <p className="swipe-hint">Swipe to read all three reviews</p>
         <div className="reviews-carousel__cta">
           <a
             href={GOOGLE_REVIEW_URL}

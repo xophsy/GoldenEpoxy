@@ -40,5 +40,6 @@ export function getGalleryManifest() {
 }
 
 export function getGalleryImages() {
-  return galleryManifest.images;
+  // Omit the preparation photo removed from the public gallery; retain its source asset.
+  return galleryManifest.images.filter((image) => image.slug !== "img-6258");
 }

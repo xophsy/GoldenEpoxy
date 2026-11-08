@@ -29,6 +29,7 @@ export default function ScrollPinnedReveal({
   const sectionRef = useRef<HTMLElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const [mobileReveal, setMobileReveal] = useState(50);
+  const [mobileMode, setMobileMode] = useState<"scroll" | "manual">("scroll");
 
   const mobileRevealStyle = {
     "--ba-mobile-reveal": `${mobileReveal}%`,
@@ -79,6 +80,51 @@ export default function ScrollPinnedReveal({
         gsap.set(ambient, { clearProps: "transform,opacity" });
         gsap.set(beforeLabel, { autoAlpha: 1 });
         gsap.set(afterLabel, { autoAlpha: 1 });
+
+        // Keep the manual comparison available by choice or if setup fails.
+        if (mobileMode === "manual") return;
+
+        let frame = 0;
+        let lastReveal = -1;
+
+        const update = () => {
+          frame = 0;
+          const distance = viewport.clientHeight * 0.55;
+          if (!distance) return;
+          const progress = Math.min(1, Math.max(0, -section.getBoundingClientRect().top / distance));
+          const reveal = Math.round(progress * 10000) / 100;
+          if (reveal === lastReveal) return;
+          lastReveal = reveal;
+          section.style.setProperty("--ba-scroll-reveal", `${reveal}%`);
+          section.style.setProperty("--ba-scroll-progress", `${progress}`);
+        };
+        const scheduleUpdate = () => {
+          if (!frame) frame = requestAnimationFrame(update);
+        };
+        const cleanup = () => {
+          cancelAnimationFrame(frame);
+          window.removeEventListener("scroll", scheduleUpdate);
+          window.removeEventListener("resize", scheduleUpdate);
+          window.removeEventListener("pageshow", scheduleUpdate);
+          delete section.dataset.mobileScroll;
+          section.style.removeProperty("--ba-scroll-reveal");
+          section.style.removeProperty("--ba-scroll-progress");
+        };
+
+        try {
+          // Safari handles the sticky photo itself. We only update the wipe;
+          // no fixed-position pin, scroll interception, or refresh loop.
+          section.dataset.mobileScroll = "true";
+          update();
+          window.addEventListener("scroll", scheduleUpdate, { passive: true });
+          window.addEventListener("resize", scheduleUpdate);
+          window.addEventListener("pageshow", scheduleUpdate);
+        } catch (error) {
+          cleanup();
+          console.warn("Mobile floor reveal could not start; using the comparison slider.", error);
+        }
+
+        return cleanup;
       });
 
       mm.add("(min-width: 769px) and (prefers-reduced-motion: reduce)", () => {
@@ -129,12 +175,9 @@ export default function ScrollPinnedReveal({
           .fromTo(beforeLabel, { autoAlpha: 1 }, { autoAlpha: 0.52 }, 0)
           .fromTo(afterLabel, { autoAlpha: 0.42 }, { autoAlpha: 1 }, 0.32);
 
-        const resizeObserver = new ResizeObserver(() => ScrollTrigger.refresh());
-        resizeObserver.observe(section);
-        resizeObserver.observe(viewport);
-
+        // ScrollTrigger already refreshes on resize. Observing its pin spacer
+        // causes refreshes during anchor scrolling, interrupting the jump.
         return () => {
-          resizeObserver.disconnect();
           timeline.scrollTrigger?.kill();
           timeline.kill();
         };
@@ -145,7 +188,7 @@ export default function ScrollPinnedReveal({
       mm.revert();
       ctx.revert();
     };
-  }, []);
+  }, [mobileMode]);
 
   return (
     <section
@@ -190,9 +233,21 @@ export default function ScrollPinnedReveal({
               {description && <p className="ba-scroll__description">{description}</p>}
               <p className="ba-scroll__hint ba-scroll__hint--desktop">Scroll through the section to reveal the finished floor.</p>
               <p className="ba-scroll__hint ba-scroll__hint--mobile">Drag the slider to compare the before and after.</p>
-              <span className="sr-only">
-                Use the slider on mobile or scroll on desktop to reveal the finished epoxy surface.
-              </span>
+              <p className="ba-scroll__hint ba-scroll__hint--mobile-scroll">Scroll to reveal the finished floor.</p>
+              <button
+                type="button"
+                className="ba-scroll__mode-switch ba-scroll__mode-switch--scroll"
+                onClick={() => setMobileMode("scroll")}
+              >
+                Use scroll reveal
+              </button>
+              <button
+                type="button"
+                className="ba-scroll__mode-switch ba-scroll__mode-switch--manual"
+                onClick={() => setMobileMode("manual")}
+              >
+                Use slider
+              </button>
             </div>
 
             <div className="ba-scroll__status">
