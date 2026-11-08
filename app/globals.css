@@ -1773,7 +1773,7 @@ textarea.field-input {
 .site-header__nav, .site-header__menu { width: min(var(--max-content-width), 100%); }
 .site-header__actions { flex-shrink: 0; }
 .site-header__crown img { height: 220px; }
-.site-header__wordmark { left: 153px; }
+.site-header__wordmark { left: 188px; }
 .meta-value { overflow-wrap: anywhere; }
 .field-shell { min-width: 0; }
 .field-input { max-width: 100%; font-size: 1rem; }
@@ -1781,8 +1781,8 @@ textarea.field-input {
 
 @media (max-width: 1279px) {
   .site-header__crown img { height: 165px; }
-  .site-header__wordmark { left: 116px; }
-  .site-header__wordmark img { height: 88px; }
+  .site-header__wordmark { left: 143px; }
+  .site-header__wordmark img { height: 42px; }
   .site-header__actions { gap: 1rem; }
 }
 
