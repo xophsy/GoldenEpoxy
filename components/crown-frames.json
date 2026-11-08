@@ -3,10 +3,10 @@
   "columns": 4,
   "perSheet": 24,
   "sheets": [
-    "/goldenepoxy-crown-v3-0.png",
-    "/goldenepoxy-crown-v3-1.png",
-    "/goldenepoxy-crown-v3-2.png",
-    "/goldenepoxy-crown-v3-3.png"
+    "/goldenepoxy-crown-v5-0.png",
+    "/goldenepoxy-crown-v5-1.png",
+    "/goldenepoxy-crown-v5-2.png",
+    "/goldenepoxy-crown-v5-3.png"
   ],
   "frameEnds": [
     33,
@@ -101,6 +101,6 @@
     3000,
     3033
   ],
-  "start": "/goldenepoxy-crown-v3-start.png",
-  "still": "/goldenepoxy-crown-v3-still.png"
+  "start": "/goldenepoxy-crown-v5-start.png",
+  "still": "/goldenepoxy-crown-v5-still.png"
 }
