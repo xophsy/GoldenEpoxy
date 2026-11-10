@@ -39,6 +39,7 @@ export default function CrownLogo() {
     let finished = false;
     let optedIn = crownMotionEnabled();
     let playOnce = false;
+    let direction = 1; // -1 while the mouse is over the logo: the drips run back up
     const motionBlocked = () => preference.matches && !optedIn && !playOnce;
 
     const report = (status: string, detail = "") => {
@@ -75,12 +76,15 @@ export default function CrownLogo() {
       if (motionBlocked()) { showStill("Reduced motion requested by Safari"); return; }
       if (document.visibilityState !== "visible") { stop(); return; }
       // A busy mobile main thread must not skip straight to the finished logo.
-      if (previous !== undefined) elapsed += Math.min(now - previous, 80);
+      if (previous !== undefined) elapsed += direction * Math.min(now - previous, 80);
       previous = now;
+      const atStart = direction < 0 && elapsed <= INTRO_HOLD_MS;
+      if (atStart) elapsed = INTRO_HOLD_MS; // leaving the logo then drips again at once, without the intro hold
       const found = frameEnds.findIndex((end) => (elapsed - INTRO_HOLD_MS) * PLAYBACK_RATE < end);
       const index = found < 0 ? frameEnds.length - 1 : found;
       try { draw(index); report("Playing"); } catch (error) { showStill("Canvas drawing failed", String(error)); return; }
-      if (index === frameEnds.length - 1) { finished = true; report("Finished"); return; }
+      if (atStart) { report("Back at start"); return; }
+      if (direction > 0 && index === frameEnds.length - 1) { finished = true; report("Finished"); return; }
       request = window.requestAnimationFrame(tick);
     };
     const play = () => {
@@ -102,6 +106,7 @@ export default function CrownLogo() {
       request = window.requestAnimationFrame(tick);
     };
     const resetFrames = () => {
+      direction = 1;
       elapsed = 0;
       drawn = -1;
       finished = false;
@@ -124,6 +129,12 @@ export default function CrownLogo() {
       if (document.visibilityState !== "visible") stop();
       else if (finished) restart();
       else play();
+    };
+    const onHover = (event: PointerEvent) => {
+      if (event.pointerType !== "mouse") return; // a tap already replays the drip
+      direction = event.type === "pointerenter" ? -1 : 1;
+      finished = false;
+      play();
     };
     const onPageShow = (event: PageTransitionEvent) => {
       if (event.persisted) restart();
@@ -158,6 +169,8 @@ export default function CrownLogo() {
     document.addEventListener("visibilitychange", onVisibility);
     preference.addEventListener("change", restart);
     logoLink?.addEventListener("click", replay);
+    logoLink?.addEventListener("pointerenter", onHover);
+    logoLink?.addEventListener("pointerleave", onHover);
     play();
     return () => {
       disposed = true;
@@ -171,6 +184,8 @@ export default function CrownLogo() {
       document.removeEventListener("visibilitychange", onVisibility);
       preference.removeEventListener("change", restart);
       logoLink?.removeEventListener("click", replay);
+      logoLink?.removeEventListener("pointerenter", onHover);
+      logoLink?.removeEventListener("pointerleave", onHover);
       sheets.forEach((sheet) => sheet.removeAttribute("src"));
       sheets.length = 0;
     };
