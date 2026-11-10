@@ -3,8 +3,8 @@
 usage: python wordmark.py CINZEL.ttf CROWN.webp OUT.png
 
 CINZEL.ttf is the Cinzel variable font (SIL Open Font License, github.com/google/fonts/tree/main/ofl/cinzel).
-CROWN is brand/crown-drip-original.webp: its gold and outline colours are copied so the two marks match.
-Proportions follow the earlier wordmark (public/legacy-images/logo-text.png).
+CROWN is brand/source/crown-drip-original.webp: its gold and outline colours are copied so the two marks match.
+Proportions follow the earlier wordmark (public/legacy-images/logo-text.png, since removed; see git history).
 """
 import sys
 from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont

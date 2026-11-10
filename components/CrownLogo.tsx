@@ -11,7 +11,7 @@ const START = animation.start;
 const STILL = animation.still;
 const frameEnds = animation.frameEnds;
 const INTRO_HOLD_MS = 450;
-const PLAYBACK_RATE = 1.66;
+const PLAYBACK_RATE = 3.75; // the 4.8 s drip clip (crown_video.py) plays in about 1.3 s
 
 export default function CrownLogo() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -177,7 +177,7 @@ export default function CrownLogo() {
   }, []);
 
   return (
-    <span className="relative block" data-crown-version="3">
+    <span className="relative block" data-crown-version="4">
       <picture>
         <source srcSet={STILL} media="(prefers-reduced-motion: reduce)" />
         <Image ref={stillRef} src={START} alt="Golden Epoxy logo" width={240} height={240} unoptimized loading="eager"
