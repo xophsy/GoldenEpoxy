@@ -6,8 +6,7 @@
     "/goldenepoxy-crown-v6-0.png",
     "/goldenepoxy-crown-v6-1.png",
     "/goldenepoxy-crown-v6-2.png",
-    "/goldenepoxy-crown-v6-3.png",
-    "/goldenepoxy-crown-v6-4.png"
+    "/goldenepoxy-crown-v6-3.png"
   ],
   "frameEnds": [
     42,
@@ -100,31 +99,7 @@
     3667,
     3708,
     3750,
-    3792,
-    3833,
-    3875,
-    3917,
-    3958,
-    4000,
-    4042,
-    4083,
-    4125,
-    4167,
-    4208,
-    4250,
-    4292,
-    4333,
-    4375,
-    4417,
-    4458,
-    4500,
-    4542,
-    4583,
-    4625,
-    4667,
-    4708,
-    4750,
-    4792
+    3792
   ],
   "start": "/goldenepoxy-crown-v6-start.png",
   "still": "/goldenepoxy-crown-v6-still.png"
