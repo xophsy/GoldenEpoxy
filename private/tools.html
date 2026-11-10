@@ -181,8 +181,10 @@ body.inv .rowdel{display:none !important;}
   .trow.taxrow .taxinput{width:46px;text-align:right;border:1px solid var(--hair);border-radius:5px;padding:3px 5px;font:inherit;}
   .trow.discount-row .tlab{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .disc-ctrl{display:inline-flex;align-items:center;gap:4px;}
-  .disc-unit{border:1px solid var(--hair);background:#f3f4f6;border-radius:6px;width:24px;height:22px;font:inherit;font-weight:700;cursor:pointer;color:var(--ink);}
-  .discinput{width:60px;text-align:right;border:1px solid var(--hair);border-radius:5px;padding:3px 5px;font:inherit;}
+  .disc-head{display:flex;justify-content:space-between;align-items:center;padding:7px 4px 2px;font-size:12px;color:var(--muted);}
+  .disc-pick{display:inline-flex;align-items:center;gap:6px;cursor:pointer;}
+  .discount-row.no-print .tval{opacity:.35;}
+  .discinput{width:44px;text-align:right;border:1px solid var(--hair);border-radius:5px;padding:3px 5px;font:inherit;}
   .disc-remove{border:none;background:#fdeaea;color:#c0392b;border-radius:5px;width:20px;height:20px;cursor:pointer;font-size:13px;line-height:1;}
   .trow.grand{border-top:2px solid var(--charcoal);margin-top:4px;padding-top:12px;
     print-color-adjust:exact;-webkit-print-color-adjust:exact;}
@@ -491,9 +493,9 @@ body.inv .rowdel{display:none !important;}
 
         <div class="totals">
           <div class="trow"><span class="tlab">Subtotal</span><span class="tval"><span class="sign">$</span><span id="subTotal">0.00</span></span></div>
-          <div class="trow discount-row" id="discountRow" style="display:none;">
-            <span class="tlab"><span id="discLabel">Discount</span><span class="disc-ctrl no-print"><button type="button" class="disc-unit" id="discUnit" data-mode="amt" aria-label="Switch discount between amount and percent">$</button><input class="discinput" id="discVal" type="text" inputmode="decimal" value="0" aria-label="Discount value"><button type="button" class="disc-remove" id="discRemove" title="Remove discount" aria-label="Remove discount">×</button></span></span>
-            <span class="tval"><span class="neg">−</span><span class="sign">$</span><span id="discAmt">0.00</span></span>
+          <div class="disc-block" id="discountRow" style="display:none;">
+            <div class="disc-head no-print"><span>Discounts · up to 20% in total</span><button type="button" class="disc-remove" id="discRemove" title="Remove discounts" aria-label="Remove discounts">×</button></div>
+            <div id="discList"></div>
           </div>
           <div class="trow taxrow">
             <span class="tlab">Tax (<input class="taxinput" id="taxRate" type="text" inputmode="decimal" value="0" aria-label="Tax rate percentage">%)</span>
@@ -986,6 +988,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 </script>
 <script>
   const fmt = new Intl.NumberFormat('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  const DISCOUNTS = ['No baseboard', 'Neighbor', 'Veteran', 'New home (under 10 years)'];
+  const DISCOUNT_MAX = 20; // percent of the subtotal, all ticked discounts together
 
   const LIBRARY = [
     {id:'grinding', category:'Preparation', title:'Surface grinding', desc:'The concrete is mechanically ground using professional diamond grinders to open the pores of the concrete and ensure proper adhesion.'},
@@ -1039,13 +1043,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     const drow = document.getElementById('discountRow');
     let discount = 0;
     if(drow && drow.style.display !== 'none'){
-      const mode = document.getElementById('discUnit').dataset.mode;
-      const dval = parseNum(document.getElementById('discVal').value);
-      discount = (mode==='pct') ? sub*dval/100 : dval;
-      if(discount < 0) discount = 0;
-      if(discount > sub) discount = sub;
-      document.getElementById('discLabel').textContent = (mode==='pct') ? ('Discount ('+(dval||0)+'%)') : 'Discount';
-      document.getElementById('discAmt').textContent = fmt.format(discount);
+      drow.querySelectorAll('.discount-row').forEach(row=>{
+        const on = row.querySelector('.disc-on').checked, pct = discountPct(row);
+        const amt = sub * pct / 100;
+        discount += amt;
+        row.classList.toggle('no-print', !(on && pct > 0)); // only discounts that take money off go on the PDF
+        row.querySelector('.disc-pct').textContent = on ? ' ('+pct+'%)' : '';
+        row.querySelector('.disc-amt').textContent = fmt.format(amt);
+      });
     }
     const net = sub - discount;
     const rate = parseNum(document.getElementById('taxRate').value);
@@ -1425,12 +1430,31 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   document.getElementById('addPriced2').addEventListener('click', addCustomProduct);
   document.getElementById('addIncluded2').addEventListener('click', addCustomIncluded);
   document.getElementById('taxRate').addEventListener('input', recalc);
-  function addDiscountLine(){ document.getElementById('discountRow').style.display='flex'; recalc(); const dv=document.getElementById('discVal'); if(dv) dv.focus(); announce('Discount added.'); }
-  function resetDiscount(){ const u=document.getElementById('discUnit'); u.dataset.mode='amt'; u.textContent='$'; document.getElementById('discVal').value='0'; document.getElementById('discLabel').textContent='Discount'; document.getElementById('discountRow').style.display='none'; recalc(); }
+  const discListEl = document.getElementById('discList');
+  DISCOUNTS.forEach(name=>{
+    const row = document.createElement('div');
+    row.className = 'trow discount-row no-print';
+    row.innerHTML = '<span class="tlab"><label class="disc-pick"><input type="checkbox" class="disc-on no-print"><span class="disc-name"></span></label><span class="disc-pct"></span>'
+      + '<span class="disc-ctrl no-print"><input class="discinput disc-val" type="text" inputmode="decimal" placeholder="0">%</span></span>'
+      + '<span class="tval"><span class="neg">−</span><span class="sign">$</span><span class="disc-amt">0.00</span></span>';
+    row.querySelector('.disc-name').textContent = name + ' discount';
+    row.querySelector('.disc-val').setAttribute('aria-label', name + ' discount percent');
+    discListEl.appendChild(row);
+  });
+  function discountPct(row){ return row.querySelector('.disc-on').checked ? Math.max(0, parseNum(row.querySelector('.disc-val').value)) : 0; }
+  discListEl.addEventListener('input', e=>{
+    const row = e.target.closest('.discount-row'), input = row.querySelector('.disc-val');
+    if(e.target === input && parseNum(input.value) > 0) row.querySelector('.disc-on').checked = true;
+    // Only the box being changed is cut back, so the 20% total never rewrites the others.
+    let others = 0;
+    discListEl.querySelectorAll('.discount-row').forEach(r=>{ if(r !== row) others += discountPct(r); });
+    if(discountPct(row) > DISCOUNT_MAX - others) input.value = String(DISCOUNT_MAX - others);
+    recalc();
+  });
+  function addDiscountLine(){ document.getElementById('discountRow').style.display='block'; recalc(); discListEl.querySelector('.disc-on').focus(); announce('Discounts added. Tick the ones that apply.'); }
+  function resetDiscount(){ discListEl.querySelectorAll('.disc-on').forEach(c=>c.checked=false); discListEl.querySelectorAll('.disc-val').forEach(i=>i.value=''); document.getElementById('discountRow').style.display='none'; recalc(); }
   document.getElementById('addDiscount').addEventListener('click', addDiscountLine);
   document.getElementById('discRemove').addEventListener('click', resetDiscount);
-  document.getElementById('discVal').addEventListener('input', recalc);
-  document.getElementById('discUnit').addEventListener('click', function(){ const pct=this.dataset.mode==='pct'; this.dataset.mode=pct?'amt':'pct'; this.textContent=pct?'$':'%'; recalc(); });
   document.getElementById('resetBtn').addEventListener('click', ()=>{
     if(confirm('Start over? This clears the customer, the price list, and the signature.')){
       rowsEl.innerHTML=''; document.querySelectorAll('#sheet [data-ph]').forEach(el=>el.textContent=''); libListEl.querySelectorAll('.lib-add').forEach(btn=>setProductButtonState(btn.dataset.id,false));
