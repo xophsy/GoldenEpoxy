@@ -11,7 +11,7 @@ const START = animation.start;
 const STILL = animation.still;
 const frameEnds = animation.frameEnds;
 const INTRO_HOLD_MS = 450;
-const PLAYBACK_RATE = 3.75; // the 4.8 s drip clip (crown_video.py) plays in about 1.3 s
+const PLAYBACK_RATE = 3; // the 3.8 s drip clip (crown_video.py) plays in about 1.3 s
 
 export default function CrownLogo() {
   const canvasRef = useRef<HTMLCanvasElement>(null);

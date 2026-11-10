@@ -29,7 +29,7 @@ The website uses its own files in `public/`, so editing a file here does not cha
 | `crown-finish.vectorcraft` | The final dripping crown in VectorCraft: crown, band and bottom strip (mirrored, live) and the drips as traced curves |
 | `crown-start.vectorcraft` | The plain crown in VectorCraft; the finish file began as a copy of it |
 | `gold-crown-start.webp` | Gold crown without drips, transparent (1340 × 1174); the gold drip animation starts on it |
-| `gold-crown-drip-clip.mp4` | The drip clip the header animation is built from: Higgsfield Seedance 2.5 (480p, start and end frames below), first 1.25 s cut; 692 × 606, 24 fps, 4.8 s |
+| `gold-crown-drip-clip.mp4` | The drip clip the header animation is built from: Higgsfield Seedance 2.5 (480p, start and end frames below), first 2.25 s cut; 692 × 606, 24 fps, 3.8 s |
 | `gold-crown-finish.webp` | Gold dripping crown on the same canvas (1340 × 1174); the gold drip animation ends on it |
 | `crown-original.webp` | Original gold crown art, no drips (1536 × 1024); the gold header animation starts on it |
 | `crown-drip-original.webp` | Original gold dripping crown art (1254 × 1254); the gold header animation ends on it, and the wordmark takes its colours from it |
