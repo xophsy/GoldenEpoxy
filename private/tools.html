@@ -86,11 +86,23 @@ body.inv .rowdel{display:none !important;}
   .lib-category+.lib-category{margin-top:18px;}
   .lib-category h3{margin:0 0 8px;color:var(--gold-deep);font-size:11px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;}
   .lib-items{display:grid;gap:8px;}
-  .lib-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px;border-radius:10px;border:1px solid var(--hair);background:#fff;transition:background .12s,border-color .12s;}
+  .lib-systems{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .lib-system{min-height:56px;padding:8px 10px;border:1px solid var(--gold-deep);border-radius:10px;background:#fffaf0;color:var(--ink);font:inherit;font-size:14px;font-weight:800;text-align:left;cursor:pointer;}
+  .lib-system:hover{background:#fdf2d6;}
+  .lib-system small{display:block;margin-top:2px;color:#59616d;font-size:12px;font-weight:600;}
+  .lib-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;align-items:center;padding:5px;border-radius:10px;border:1px solid var(--hair);background:#fff;transition:background .12s,border-color .12s;}
   .lib-item:hover{background:#faf8f1;border-color:#dccb9f;}
-  .lib-item .lib-text{min-width:0;font-size:14px;line-height:1.4;}
-  .lib-item .lib-title{font-weight:800;display:block;margin-bottom:3px;color:var(--ink);}
-  .lib-item .lib-desc{display:block;color:var(--muted);}
+  .lib-more{display:block;min-width:0;min-height:38px;padding:9px 6px;border:0;border-radius:6px;background:none;color:var(--ink);font:inherit;font-size:14px;font-weight:800;line-height:1.3;text-align:left;cursor:pointer;}
+  .lib-more::after{content:'';display:inline-block;width:6px;height:6px;margin-left:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:translateY(-3px) rotate(45deg);transition:transform .15s;}
+  .lib-more[aria-expanded="true"]::after{transform:translateY(1px) rotate(-135deg);}
+  .lib-item .lib-desc{grid-column:1/-1;margin:0 6px 4px;color:var(--muted);font-size:14px;line-height:1.4;}
+  .lib-desc[hidden]{display:none;}
+  .lib-sheen{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;padding:3px;border:1px solid var(--hair);border-radius:10px;}
+  .lib-sheen input{position:absolute;width:1px;height:1px;opacity:0;}
+  .lib-sheen label{display:flex;align-items:center;justify-content:center;min-height:40px;padding:4px;border-radius:7px;color:var(--ink);font-size:14px;font-weight:800;text-align:center;cursor:pointer;}
+  .lib-sheen label:hover{background:#faf8f1;}
+  .lib-sheen input:checked+label{background:#f6e7bf;box-shadow:inset 0 0 0 2px var(--gold-deep);}
+  .lib-sheen input:focus-visible+label{outline:3px solid #1463d6;outline-offset:2px;}
   .lib-add{align-self:center;min-width:64px;min-height:38px;padding:7px 10px;border:1px solid var(--gold-deep);border-radius:8px;background:#fff;color:var(--gold-deep);font:inherit;font-weight:800;cursor:pointer;}
   .lib-add:hover{background:#fdf7e9;}
   .lib-add.added,.lib-add:disabled{border-color:#b8bdc5;background:#f1f3f5;color:#59616d;cursor:default;}
@@ -287,7 +299,7 @@ body.inv .rowdel{display:none !important;}
     .library .lib-done{display:block;position:sticky;bottom:0;box-shadow:0 -8px 14px rgba(255,255,255,.94);}
     .lib-backdrop.show{display:block;}
 
-    .toolbar button,.seg button,.lib-close,.lib-add,.lib-done,.rowdel,.addbar button,.disc-unit,.disc-remove,.sig-clear{min-height:44px;}
+    .toolbar button,.seg button,.lib-close,.lib-add,.lib-done,.lib-more,.lib-sheen label,.rowdel,.addbar button,.disc-unit,.disc-remove,.sig-clear{min-height:44px;}
     .rowdel{width:44px;height:44px;}
     .disc-unit,.disc-remove{width:44px;height:44px;}
     .bottombar{max-width:none;margin:14px 8px max(26px,env(safe-area-inset-bottom));}
@@ -342,7 +354,7 @@ body.inv .rowdel{display:none !important;}
   }
 
   @media (pointer:coarse){
-    .toolbar button,.seg button,.lib-close,.lib-add,.lib-done,.rowdel,.addbar button,.disc-unit,.disc-remove,.sig-clear{min-height:44px;}
+    .toolbar button,.seg button,.lib-close,.lib-add,.lib-done,.lib-more,.lib-sheen label,.rowdel,.addbar button,.disc-unit,.disc-remove,.sig-clear{min-height:44px;}
     .rowdel{width:44px;height:44px;}
     .disc-unit,.disc-remove{width:44px;height:44px;}
   }
@@ -354,6 +366,7 @@ body.inv .rowdel{display:none !important;}
 
   @media (forced-colors:active){
     button,input,[contenteditable],.lib-item,.sig-box{forced-color-adjust:auto;}
+    .lib-sheen input:checked+label{outline:2px solid Highlight;}
     .gold-rule,.editor-guide{border-color:CanvasText;}
     .seg button.active,.toolbar button.primary,.lib-done,.pad-actions button.done,.pdf-actions .share{border:2px solid ButtonText;}
   }
@@ -401,7 +414,7 @@ body.inv .rowdel{display:none !important;}
       <h2 id="productPickerTitle">What's <span>included</span></h2>
       <button class="lib-close" id="libClose" title="Close" aria-label="Close product picker">×</button>
     </div>
-    <p class="hint" id="productPickerHint">Tap Add for each part of the job. It shows on the estimate as “Included”, with no separate price.</p>
+    <p class="hint" id="productPickerHint">Pick a floor system to add its usual steps, then add or remove single items. They show on the estimate as “Included”, with no separate price.</p>
     <div id="libList"></div>
     <button type="button" class="lib-done" id="libDone">Done</button>
   </aside>
@@ -1002,15 +1015,20 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     {id:'metallic', category:'Coatings and finishes', title:'Metallic epoxy coat', desc:'A self-leveling epoxy mixed with metallic pigments is poured and worked by hand to create the flowing, marbled depth of a metallic floor.'},
     {id:'glaze', category:'Coatings and finishes', title:'Clear glaze coat', desc:'A clear epoxy glaze coat is applied over the color or design to add depth and a glass-like surface before the final topcoat.'},
     {id:'cleartop', category:'Coatings and finishes', title:'Clear protective topcoat', desc:'A clear protective topcoat seals the floor with a wear-resistant, UV-resistant surface.'},
-    {id:'gloss', category:'Finish sheen', title:'High-gloss finish', desc:'The topcoat is finished in high gloss for a deep, wet, mirror-like shine that makes colors and metallic effects stand out.'},
-    {id:'satin', category:'Finish sheen', title:'Satin finish', desc:'The topcoat is finished in satin for a soft, low-glare sheen that hides dust, scratches, and footprints better than gloss.'},
-    {id:'matte', category:'Finish sheen', title:'Matte finish', desc:'The topcoat is finished in matte for a flat, non-reflective look with minimal glare.'},
+    {id:'gloss', category:'Finish sheen', short:'Gloss', title:'High-gloss finish', desc:'The topcoat is finished in high gloss for a deep, wet, mirror-like shine that makes colors and metallic effects stand out.'},
+    {id:'satin', category:'Finish sheen', short:'Satin', title:'Satin finish', desc:'The topcoat is finished in satin for a soft, low-glare sheen that hides dust, scratches, and footprints better than gloss.'},
+    {id:'matte', category:'Finish sheen', short:'Matte', title:'Matte finish', desc:'The topcoat is finished in matte for a flat, non-reflective look with minimal glare.'},
     {id:'urethane', category:'Coatings and finishes', title:'Urethane topcoat', desc:'Used as the protective finish coat to improve scratch resistance, reduce wear, and help the floor hold its color and sheen over time.'},
     {id:'polyaspartic', category:'Coatings and finishes', title:'Polyaspartic coats', desc:'Best for faster return to service, with strong UV stability and chemical resistance for garages, shops, and high-use spaces.'},
     {id:'antislip', category:'Additives', title:'Anti-slip additives', desc:'Added to the topcoat to create more traction and make the floor safer in wet areas, work zones, and heavy-traffic spaces.'},
     {id:'esd', category:'Additives', title:'ESD additives', desc:'Used when static control matters, helping safely dissipate electrical charge in technical, lab, and electronics environments.'},
   ];
   const CATEGORY_ORDER = ['Preparation','Coatings and finishes','Finish sheen','Additives'];
+  const SHEEN = 'Finish sheen'; // one choice only: shown as a switch, not as Add buttons
+  const SYSTEMS = [
+    {title:'Flake floor', ids:['grinding','crackrepair','basecoat','flakes','polytop']},
+    {title:'Metallic floor', ids:['grinding','crackrepair','primer','metallicbase','metallic','cleartop']},
+  ];
   const FIRST_AREA = 'Epoxy floor coating';
 
   const rowsEl = document.getElementById('rows');
@@ -1071,6 +1089,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function updateEmptyState(){ emptyItemsEl.hidden = rowsEl.children.length > 0; }
 
   function setProductButtonState(productId, added){
+    const radio = libListEl.querySelector('input[name="sheen"][value="'+productId+'"]');
+    if(radio){ (added ? radio : document.getElementById('sheen-none')).checked = true; return; }
     const btn = libListEl.querySelector('.lib-add[data-id="'+productId+'"]');
     if(!btn) return;
     btn.disabled = added;
@@ -1133,38 +1153,86 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     rowsEl.appendChild(tr); updateEmptyState(); return tr;
   }
 
-  function addProduct(item){
-    if(docType==='INV' || rowsEl.querySelector('tr[data-product-id="'+item.id+'"]')) return;
+  function addProduct(item, quiet=false){
+    if(docType==='INV' || rowsEl.querySelector('tr[data-product-id="'+item.id+'"]')) return false;
     addIncludedRow(item.title+' — '+item.desc,item.id);
     setProductButtonState(item.id,true);
-    announce(item.title+' added as included.');
+    if(!quiet) announce(item.title+' added as included.');
+    return true;
   }
 
-  CATEGORY_ORDER.forEach((category,categoryIndex)=>{
+  function addSystem(system){
+    const added = system.ids.filter(id=>addProduct(LIBRARY.find(item=>item.id===id),true)).length;
+    announce(added ? system.title+': '+added+' items added as included.' : 'All '+system.title.toLowerCase()+' items are already added.');
+  }
+
+  function setSheen(id){
+    LIBRARY.filter(item=>item.category===SHEEN && item.id!==id).forEach(item=>{
+      const tr = rowsEl.querySelector('tr[data-product-id="'+item.id+'"]');
+      if(tr) tr.remove();
+    });
+    updateEmptyState();
+    if(id) addProduct(LIBRARY.find(item=>item.id===id)); else announce('Finish sheen removed.');
+  }
+
+  function libSection(title, id){
     const section = document.createElement('section');
     section.className='lib-category';
     const heading = document.createElement('h3');
-    heading.id='productCategory'+categoryIndex;
-    heading.textContent=category;
+    heading.id=id; heading.textContent=title;
+    section.appendChild(heading); libListEl.appendChild(section);
+    return section;
+  }
+
+  const systemsEl = document.createElement('div');
+  systemsEl.className='lib-systems'; systemsEl.setAttribute('role','group'); systemsEl.setAttribute('aria-labelledby','productSystems');
+  SYSTEMS.forEach(system=>{
+    const btn = document.createElement('button');
+    btn.type='button'; btn.className='lib-system';
+    btn.append(system.title+' ');
+    const count = document.createElement('small'); count.textContent='Adds '+system.ids.length+' items';
+    btn.appendChild(count);
+    btn.addEventListener('click',()=>addSystem(system));
+    systemsEl.appendChild(btn);
+  });
+  libSection('Quick start','productSystems').appendChild(systemsEl);
+
+  CATEGORY_ORDER.forEach((category,categoryIndex)=>{
+    const section = libSection(category,'productCategory'+categoryIndex);
+    const categoryItems = LIBRARY.filter(item=>item.category===category);
+    if(category===SHEEN){
+      const group = document.createElement('div');
+      group.className='lib-sheen'; group.setAttribute('role','radiogroup'); group.setAttribute('aria-labelledby','productCategory'+categoryIndex);
+      categoryItems.concat({id:'',short:'None'}).forEach(item=>{
+        const input = document.createElement('input');
+        input.type='radio'; input.name='sheen'; input.id='sheen-'+(item.id||'none'); input.value=item.id; input.checked=!item.id;
+        const label = document.createElement('label');
+        label.htmlFor=input.id; label.textContent=item.short;
+        input.addEventListener('change',()=>setSheen(item.id));
+        group.append(input,label);
+      });
+      section.appendChild(group);
+      return;
+    }
     const items = document.createElement('div');
-    items.className='lib-items'; items.setAttribute('role','group'); items.setAttribute('aria-labelledby',heading.id);
-    LIBRARY.filter(item=>item.category===category).forEach(item=>{
+    items.className='lib-items'; items.setAttribute('role','group'); items.setAttribute('aria-labelledby','productCategory'+categoryIndex);
+    categoryItems.forEach(item=>{
       const card = document.createElement('div');
       card.className='lib-item';
-      const copy = document.createElement('div');
-      copy.className='lib-text';
-      const title = document.createElement('span');
-      title.className='lib-title'; title.textContent=item.title;
-      const desc = document.createElement('span');
-      desc.className='lib-desc'; desc.textContent=item.desc;
+      const more = document.createElement('button');
+      more.type='button'; more.className='lib-more'; more.textContent=item.title;
+      more.setAttribute('aria-expanded','false'); more.setAttribute('aria-controls','libDesc-'+item.id);
+      const desc = document.createElement('p');
+      desc.className='lib-desc'; desc.id='libDesc-'+item.id; desc.textContent=item.desc; desc.hidden=true;
+      more.addEventListener('click',()=>{ desc.hidden=!desc.hidden; more.setAttribute('aria-expanded',String(!desc.hidden)); });
       const add = document.createElement('button');
       add.type='button'; add.className='lib-add'; add.dataset.id=item.id; add.dataset.title=item.title;
       add.setAttribute('aria-label','Add '+item.title); add.setAttribute('aria-pressed','false'); add.textContent='Add';
       add.addEventListener('click',()=>addProduct(item));
       add.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); addProduct(item); } });
-      copy.append(title,desc); card.append(copy,add); items.appendChild(card);
+      card.append(more,add,desc); items.appendChild(card);
     });
-    section.append(heading,items); libListEl.appendChild(section);
+    section.appendChild(items);
   });
 
   // ---- mobile drawer ----
@@ -1187,7 +1255,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     libraryTrigger=trigger || document.activeElement;
     library.classList.add('open'); backdrop.classList.add('show'); document.body.classList.add('modal-open'); libToggle.setAttribute('aria-expanded','true');
     syncLibraryMode();
-    requestAnimationFrame(()=>{ const first=libListEl.querySelector('.lib-add:not(:disabled)') || document.getElementById('libDone'); first.focus(); });
+    requestAnimationFrame(()=>{ const first=libListEl.querySelector('.lib-system') || document.getElementById('libDone'); first.focus(); });
   }
   function closeLib(){
     if(!library.classList.contains('open')) return;
@@ -1430,7 +1498,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   document.getElementById('pdfCloseBtn').addEventListener('click', closePdfReady);
   function showProductPicker(trigger){
     if(window.matchMedia('(max-width:1199px)').matches) openLib(trigger);
-    else { library.scrollIntoView({behavior:'smooth',block:'start'}); const first=libListEl.querySelector('.lib-add:not(:disabled)'); if(first) first.focus(); }
+    else { library.scrollIntoView({behavior:'smooth',block:'start'}); const first=libListEl.querySelector('.lib-system'); if(first) first.focus(); }
   }
   function addCustomProduct(){ const tr=addPricedRow(); tr.querySelector('.desc .f').focus(); announce('Floor area added. Type which floor, the square feet, and the price per square foot.'); }
   function addCustomIncluded(){ const tr=addIncludedRow(); tr.querySelector('.desc .f').focus(); announce('Included item added. Type what is included.'); }
@@ -1465,7 +1533,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   document.getElementById('discRemove').addEventListener('click', resetDiscount);
   document.getElementById('resetBtn').addEventListener('click', ()=>{
     if(confirm('Start over? This clears the customer, the price list, and the signature.')){
-      rowsEl.innerHTML=''; document.querySelectorAll('#sheet [data-ph]').forEach(el=>el.textContent=''); libListEl.querySelectorAll('.lib-add').forEach(btn=>setProductButtonState(btn.dataset.id,false));
+      rowsEl.innerHTML=''; document.querySelectorAll('#sheet [data-ph]').forEach(el=>el.textContent=''); LIBRARY.forEach(item=>setProductButtonState(item.id,false));
       document.getElementById('sigName').textContent=''; clearSignature(); resetDiscount();
       addPricedRow(FIRST_AREA); recalc(); startNewDoc(); announce('Started over with a blank estimate.');
     }
