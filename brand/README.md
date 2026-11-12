@@ -28,9 +28,9 @@ The website uses its own files in `public/`, so editing a file here does not cha
 |---|---|
 | `crown-finish.vectorcraft` | The final dripping crown in VectorCraft: crown, band and bottom strip (mirrored, live) and the drips as traced curves |
 | `crown-start.vectorcraft` | The plain crown in VectorCraft; the finish file began as a copy of it |
-| `gold-crown-start.webp` | Gold crown without drips, transparent (1340 × 1174); the gold drip animation starts on it |
+| `gold-crown-start.webp` | **Final** gold crown without drips, transparent (1340 × 1174); the gold drip animation starts on it. Copy of `GoldenEpoxy\Brand\Solid Crown.png` |
 | `gold-crown-drip-clip.mp4` | The drip clip the header animation is built from: Higgsfield Seedance 2.5 (480p, start and end frames below), first 2.25 s cut; 692 × 606, 24 fps, 3.8 s |
-| `gold-crown-finish.webp` | Gold dripping crown on the same canvas (1340 × 1174); the gold drip animation ends on it |
+| `gold-crown-finish.webp` | **Final** gold dripping crown on the same canvas (1340 × 1174); the gold drip animation ends on it. Copy of `GoldenEpoxy\Brand\Melty Crown.png` |
 | `crown-original.webp` | Original gold crown art, no drips (1536 × 1024); the gold header animation starts on it |
 | `crown-drip-original.webp` | Original gold dripping crown art (1254 × 1254); the gold header animation ends on it, and the wordmark takes its colours from it |
 
@@ -41,8 +41,8 @@ The website uses its own files in `public/`, so editing a file here does not cha
 | `wordmark.png` | "GOLDEN — EPOXY —" in the crown's gold (Cinzel) | 2838 × 745 | `public/goldenepoxy-wordmark-v5.png` |
 | `crown-gold-still.png` | Gold dripping crown, the header animation's final still | 480 × 480 | `public/goldenepoxy-crown-v6-still.png` |
 | `crown-gold-animation.gif` | The earlier (v5) gold header animation, on white; the site now plays the v6 drip clip | 419 × 361 | built from `public/goldenepoxy-crown-v5-*.png` |
-| `favicon.png` | Browser-tab icon | 1024 × 1024 | `app/icon.png` |
-| `pdf-logo.png` | Crown with "GOLDEN —EPOXY—" capitals, older style | 1568 × 484 | `public/tools-logo.png` (estimate and invoice PDFs) |
+| `favicon.png` | Browser-tab icon: the final dripping crown | 1024 × 1024 | `app/icon.png` |
+| `pdf-logo.png` | Final dripping crown beside the wordmark | 1568 × 484 | `public/tools-logo.png` (estimate and invoice PDFs) |
 
 ## Rebuilding
 
