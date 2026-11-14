@@ -1,6 +1,6 @@
-const GOOGLE_REVIEW_URL = "https://share.google/i1OkVsiyHWqzYPYcw";
+export const GOOGLE_REVIEW_URL = "https://share.google/i1OkVsiyHWqzYPYcw";
 
-const REVIEWS = [
+export const REVIEWS = [
   {
     name: "Dr. Felipe Messias",
     initials: "FM",

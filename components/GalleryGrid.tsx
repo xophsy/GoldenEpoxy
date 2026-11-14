@@ -3,8 +3,23 @@ import { useEffect, useRef, useState } from "react";
 import PhotoSwipe from "photoswipe";
 import "photoswipe/style.css";
 import type { GalleryImage } from "@/lib/gallery";
-import { featuredPhotos, photoDescriptions } from "@/data/gallery-editorial";
+import { featuredPhotos, photoDescriptions, photoTags } from "@/data/gallery-editorial";
 import styles from "./GalleryGrid.module.css";
+import chips from "./collection-pages.module.css";
+
+const FILTERS = [
+  { key: "all", label: "All" },
+  { key: "metallic", label: "Metallic" },
+  { key: "flake", label: "Flake" },
+  { key: "garage", label: "Garages" },
+  { key: "outdoor", label: "Patios and entries" },
+  { key: "indoor", label: "Rooms and showrooms" },
+] as const;
+type FilterKey = typeof FILTERS[number]["key"];
+function matches(image: GalleryImage, filter: FilterKey) {
+  const tags = photoTags[image.slug];
+  return filter === "all" || tags?.finish === filter || tags?.space === filter;
+}
 
 function description(image: GalleryImage) {
   return photoDescriptions[image.slug] ?? "Golden Epoxy floor installation";
@@ -34,6 +49,8 @@ function Photo({ image, sizes, eager = false, position = "50% 50%" }: {
 export default function GalleryGrid({ images }: { images: GalleryImage[] }) {
   const [selected, setSelected] = useState(0);
   const [visibleCount, setVisibleCount] = useState(12);
+  const [filter, setFilter] = useState<FilterKey>("all");
+  const shown = images.filter(image => matches(image, filter));
   const viewer = useRef<PhotoSwipe | null>(null);
   const grid = useRef<HTMLDivElement>(null);
   const featured = featuredPhotos.flatMap(entry => {
@@ -42,15 +59,15 @@ export default function GalleryGrid({ images }: { images: GalleryImage[] }) {
   });
   const active = featured[selected] ?? featured[0];
   useEffect(() => () => { viewer.current?.destroy(); }, []);
-  function open(image: GalleryImage, origin: HTMLButtonElement) {
+  function open(image: GalleryImage, origin: HTMLButtonElement, list: GalleryImage[] = images) {
     if (viewer.current) return;
     const scrollY = window.scrollY;
     const previousStyle = document.body.getAttribute("style");
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const instance = new PhotoSwipe({
-      dataSource: images.map(item => ({ src: item.lightbox.src, width: item.lightbox.width,
+      dataSource: list.map(item => ({ src: item.lightbox.src, width: item.lightbox.width,
         height: item.lightbox.height, alt: description(item) })),
-      index: images.findIndex(item => item.id === image.id), mainClass: "golden-gallery-viewer", bgOpacity: 1,
+      index: list.findIndex(item => item.id === image.id), mainClass: "golden-gallery-viewer", bgOpacity: 1,
       showHideAnimationType: reduced ? "none" : "fade", showAnimationDuration: reduced ? 0 : 180,
       hideAnimationDuration: reduced ? 0 : 180, zoomAnimationDuration: reduced ? 0 : 180,
       returnFocus: false, trapFocus: true, closeOnVerticalDrag: false,
@@ -59,6 +76,17 @@ export default function GalleryGrid({ images }: { images: GalleryImage[] }) {
       errorMsg: "This photo could not load. Try the next photo or close and reopen it.",
     });
     viewer.current = instance;
+    instance.on("uiRegister", () => {
+      instance.ui?.registerElement({
+        name: "quote", className: "pswp__quote", order: 8, isButton: false, tagName: "a", appendTo: "root",
+        html: "Quote a floor like this",
+        onInit: (element, pswp) => {
+          const link = element as HTMLAnchorElement;
+          const point = () => { link.href = `/contact?photo=${encodeURIComponent(list[pswp.currIndex]?.slug ?? "")}`; };
+          point(); pswp.on("change", point);
+        },
+      });
+    });
     instance.on("destroy", () => {
       viewer.current = null;
       if (previousStyle === null) document.body.removeAttribute("style");
@@ -71,11 +99,11 @@ export default function GalleryGrid({ images }: { images: GalleryImage[] }) {
     instance.element?.setAttribute("aria-label", "Golden Epoxy photo viewer");
     instance.element?.addEventListener("keydown", event => {
       if (event.key !== "Tab") return;
-      const buttons = Array.from(instance.element?.querySelectorAll<HTMLButtonElement>("button:not([disabled])") ?? [])
+      const buttons = Array.from(instance.element?.querySelectorAll<HTMLElement>("button:not([disabled]), a[href]") ?? [])
         .filter(button => button.getClientRects().length && getComputedStyle(button).visibility !== "hidden");
       if (!buttons.length) return;
       event.preventDefault();
-      const current = buttons.indexOf(document.activeElement as HTMLButtonElement);
+      const current = buttons.indexOf(document.activeElement as HTMLElement);
       const next = current < 0 ? (event.shiftKey ? buttons.length - 1 : 0)
         : (current + (event.shiftKey ? -1 : 1) + buttons.length) % buttons.length;
       buttons[next].focus();
@@ -84,10 +112,10 @@ export default function GalleryGrid({ images }: { images: GalleryImage[] }) {
   }
   function showMore() {
     const firstNewIndex = visibleCount;
-    setVisibleCount(count => Math.min(count + 12, images.length));
+    setVisibleCount(count => Math.min(count + 12, shown.length));
     requestAnimationFrame(() => grid.current?.querySelectorAll<HTMLButtonElement>("button")[firstNewIndex]?.focus({ preventScroll: true }));
   }
-  if (!images.length) return <div className={styles.empty}><p>We’re updating our project photos.</p><a href="/contact">Talk to us about your floor ↗</a></div>;
+  if (!images.length) return <div className={styles.empty}><p>We’re updating our project photos.</p><a href="/contact">Book a free estimate</a></div>;
   return <div className={styles.gallery}>
     {active && <section className={styles.showroom} aria-label="Featured floor photographs">
       <button className={styles.stage} onClick={event => open(active.image, event.currentTarget)} aria-label={`Enlarge ${description(active.image)}`}>
@@ -104,14 +132,16 @@ export default function GalleryGrid({ images }: { images: GalleryImage[] }) {
         </button>)}
       </div>
     </section>}
-    <div className={styles.collectionHeading}><div><p className={styles.eyebrow}>A closer look</p><h2>Every floor has character.</h2></div><p>Explore the details. Find your inspiration.</p></div>
-    <div className={styles.toolbar}><p role="status">Showing {Math.min(visibleCount, images.length)} of {images.length} photos</p><span>Tap to explore <span aria-hidden>↗</span></span></div>
+    <div className={styles.collectionHeading}><div><p className={styles.eyebrow}>Every photo</p><h2>Narrow it to the floor you want.</h2></div><p>Open any photo full size, then ask us to quote a floor like it.</p></div>
+    <div className={chips.categories} role="group" aria-label="Filter photos" style={{ marginTop: 24 }}>{FILTERS.map(option => <button type="button" key={option.key} className={chips.category} aria-pressed={filter === option.key}
+      onClick={() => { setFilter(option.key); setVisibleCount(12); }}>{option.label}<span>{images.filter(image => matches(image, option.key)).length}</span></button>)}</div>
+    <div className={styles.toolbar}><p role="status">Showing {Math.min(visibleCount, shown.length)} of {shown.length} photos</p></div>
     <div ref={grid} className={styles.collage} aria-label="Installation photographs">
-      {images.slice(0, visibleCount).map((image, index) => <button key={image.id} className={styles.tile} onClick={event => open(image, event.currentTarget)} aria-label={`Enlarge ${description(image)}, photo ${index + 1}`}>
+      {shown.slice(0, visibleCount).map((image, index) => <button key={image.id} className={styles.tile} onClick={event => open(image, event.currentTarget, shown)} aria-label={`Enlarge ${description(image)}, photo ${index + 1}`}>
         <Photo image={image} sizes="(max-width: 359px) 100vw, (max-width: 767px) 90vw, (max-width: 1023px) 50vw, 800px" />
         <span className={styles.tileNumber}>{String(index + 1).padStart(2, "0")}</span><span className={styles.tileExpand} aria-hidden>↗</span>
       </button>)}
     </div>
-    {visibleCount < images.length && <button className={styles.loadMore} onClick={showMore}>Show More Photos <span aria-hidden>↓</span></button>}
+    {visibleCount < shown.length && <button className={styles.loadMore} onClick={showMore}>Show more photos <span aria-hidden>↓</span></button>}
   </div>;
 }

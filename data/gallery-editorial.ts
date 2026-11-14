@@ -1,12 +1,37 @@
 // Stable photo slugs, separate from generated assets. Descriptions reflect visible content only.
 export const featuredPhotos = [
-  { id: "img-7280", label: "A different kind of blue", position: "50% 62%" },
-  { id: "img-3800", label: "Made to stand out", position: "50% 65%" },
-  { id: "img-6839", label: "Depth in every detail", position: "50% 60%" },
-  { id: "img-7533", label: "A fresh perspective", position: "50% 60%" },
-  { id: "img-4398", label: "An entrance with character", position: "50% 55%" },
-  { id: "img-0804", label: "An expressive finish", position: "50% 68%" },
+  { id: "img-7280", label: "Blue and white metallic", position: "50% 62%" },
+  { id: "img-3800", label: "Yellow and charcoal metallic in a showroom", position: "50% 65%" },
+  { id: "img-6839", label: "Charcoal, silver and blue metallic", position: "50% 60%" },
+  { id: "img-7533", label: "Gray flake garage", position: "50% 60%" },
+  { id: "img-4398", label: "Flake entry path", position: "50% 55%" },
+  { id: "img-0804", label: "Red, silver and charcoal metallic", position: "50% 68%" },
 ] as const;
+
+export type PhotoFinish = "metallic" | "flake" | "solid";
+export type PhotoSpace = "garage" | "outdoor" | "indoor";
+// Tagged by eye from each photo; a photo whose finish or space is unclear gets no tag and shows under All only.
+const tag = (finish?: PhotoFinish, space?: PhotoSpace) => ({ finish, space });
+export const photoTags: Record<string, { finish?: PhotoFinish; space?: PhotoSpace }> = {
+  "img-0804": tag("metallic", "indoor"), "img-1587": tag("metallic", "garage"), "img-3732": tag("metallic", "indoor"),
+  "img-3765": tag("metallic", "indoor"), "img-3800": tag("metallic", "indoor"), "img-4275": tag("flake"),
+  "img-4374": tag("flake", "outdoor"), "img-4388": tag("flake", "outdoor"), "img-4393": tag("flake", "outdoor"),
+  "img-4398": tag("flake", "outdoor"), "img-4400": tag("flake", "outdoor"), "img-4560": tag("flake", "garage"),
+  "img-5075": tag("solid", "indoor"), "img-5434": tag("flake"), "img-5445": tag("metallic", "garage"),
+  "img-5449": tag("metallic"), "img-5504": tag("flake", "garage"), "img-5855": tag("flake", "garage"),
+  "img-5893": tag("flake", "outdoor"), "img-5906": tag("flake", "outdoor"), "img-5908": tag("flake", "outdoor"),
+  "img-6031": tag("flake", "garage"), "img-6076": tag(undefined, "garage"), "img-6077": tag(undefined, "garage"),
+  "img-6440": tag("flake", "outdoor"), "img-6443": tag("flake", "outdoor"), "img-6444": tag("flake", "garage"),
+  "img-6521": tag("flake", "garage"), "img-6523": tag("flake", "garage"), "img-6544": tag("flake", "outdoor"),
+  "img-6546": tag("flake", "outdoor"), "img-6551": tag("flake", "outdoor"), "img-6553": tag("flake", "outdoor"),
+  "img-6567": tag("flake", "outdoor"), "img-6573": tag("flake", "outdoor"), "img-6575": tag("flake", "outdoor"),
+  "img-6768": tag("flake", "outdoor"), "img-6770": tag("flake", "outdoor"), "img-6773": tag("flake", "outdoor"),
+  "img-6836": tag("metallic"), "img-6839": tag("metallic", "indoor"), "img-6877": tag("flake", "garage"),
+  "img-6878": tag("flake", "garage"), "img-7230": tag("metallic", "indoor"), "img-7257": tag("flake", "garage"),
+  "img-7258": tag("flake", "garage"), "img-7259": tag("flake", "garage"), "img-7260": tag("flake", "garage"),
+  "img-7279": tag("metallic", "indoor"), "img-7280": tag("metallic"), "img-7347": tag("flake"),
+  "img-7397": tag("flake", "outdoor"), "img-7533": tag("flake", "garage"), "teslalogo": tag("solid", "garage"),
+};
 export const photoDescriptions: Record<string, string> = {
   "img-0804": "Red, silver and charcoal swirls along an interior floor",
   "img-1587": "Glossy blue and white floor inside a garage",
