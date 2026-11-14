@@ -49,7 +49,7 @@ const questions: ChoiceQuestion[] = [
     label: "How big is the space?",
     options: [
       { label: "Small", hint: "1-car garage or under 300 sq ft" },
-      { label: "Medium", hint: "2-car garage or 300–700 sq ft" },
+      { label: "Medium", hint: "2-car garage or 300 to 700 sq ft" },
       { label: "Large", hint: "3+ car garage or 700+ sq ft" },
     ],
   },
@@ -98,9 +98,10 @@ const stepVariants = {
 
 /* ── Component ────────────────────────────────────────── */
 
-export default function ContactForm() {
-  const [form, setForm] = useState<FormState>(initialState);
-  const [step, setStep] = useState(0);
+// initial comes from a catalog swatch or gallery photo link (validated on the server); a known look skips the first question.
+export default function ContactForm({ initial }: { initial?: { style?: string; message?: string } }) {
+  const [form, setForm] = useState<FormState>(() => ({ ...initialState, ...initial }));
+  const [step, setStep] = useState(initial?.style ? 1 : 0);
   const [sending, setSending] = useState(false);
   const [submissionMode, setSubmissionMode] = useState<"resend" | "mailto" | null>(null);
   const [error, setError] = useState("");
@@ -198,7 +199,7 @@ export default function ContactForm() {
           <h3 className="text-xl font-semibold text-white mb-2">
             {submissionMode === "resend" ? "We got your request!" : "Your estimate email is ready"}
           </h3>
-          <p className="text-sm text-white/50">
+          <p className="text-sm text-white/70">
             {submissionMode === "resend" ? (
               <>
                 We&apos;ll be in touch within one business day. If you need us sooner, call or text{" "}
@@ -222,14 +223,14 @@ export default function ContactForm() {
       {/* Progress bar */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/40">
+          <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/70">
             Step {step + 1} of {totalSteps}
           </p>
           {step > 0 && (
             <button
               type="button"
               onClick={() => setStep((s) => s - 1)}
-              className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-400/70 hover:text-gold-400 transition-colors"
+              className="inline-flex min-h-[44px] items-center px-2 text-xs font-semibold uppercase tracking-[0.2em] text-gold-400 hover:text-white transition-colors cursor-pointer"
             >
               Back
             </button>
@@ -292,7 +293,7 @@ export default function ContactForm() {
                       <div className={image ? "px-4 py-3" : ""}>
                         {label}
                         {hint && (
-                          <span className="block mt-0.5 text-xs font-normal text-white/35">
+                          <span className="block mt-0.5 text-xs font-normal text-white/70">
                             {hint}
                           </span>
                         )}
@@ -306,7 +307,7 @@ export default function ContactForm() {
               <button
                 type="button"
                 onClick={() => setStep((s) => Math.min(s + 1, totalSteps - 1))}
-                className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-white/30 hover:text-white/50 transition-colors cursor-pointer"
+                className="mt-3 inline-flex min-h-[44px] items-center text-xs font-semibold uppercase tracking-[0.2em] text-white/70 hover:text-white transition-colors cursor-pointer"
               >
                 Skip this question
               </button>
@@ -321,9 +322,9 @@ export default function ContactForm() {
               transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
             >
               <p className="text-xl font-semibold tracking-[-0.02em] text-white mb-2">
-                Almost done — how should we reach you?
+                Almost done. How should we reach you?
               </p>
-              <p className="text-sm text-white/50 mb-6">
+              <p className="text-sm text-white/70 mb-6">
                 We&apos;ll get back to you within one business day.
               </p>
 
@@ -394,7 +395,7 @@ export default function ContactForm() {
                 </div>
                 <div className="field-shell sm:col-span-2">
                   <label className="field-label" htmlFor="message">
-                    Anything else? <span className="text-white/30 font-normal">(optional)</span>
+                    Anything else? <span className="text-white/70 font-normal">(optional)</span>
                   </label>
                   <textarea
                     id="message"
@@ -418,20 +419,21 @@ export default function ContactForm() {
                   )}
                   <div className="flex flex-wrap gap-3">
                     <button type="submit" disabled={sending} className="button-base button-primary sm:w-auto disabled:opacity-50">
-                      {sending ? "Sending…" : "Get My Free Estimate"}
+                      {sending ? "Sending…" : "Book my free estimate"}
                     </button>
                     <a href="tel:+18135800323" className="button-base button-secondary sm:w-auto">
-                      Text or Call (813) 580-0323
+                      Call or text Carlos: (813) 580-0323
                     </a>
                   </div>
 
                   {/* Trust line */}
-                  <p className="flex items-center gap-2 text-xs text-white/30">
+                  <p className="flex items-center gap-2 text-xs text-white/70">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 16 16"
                       fill="currentColor"
-                      className="h-3.5 w-3.5 flex-shrink-0 text-white/25"
+                      aria-hidden="true"
+                      className="h-3.5 w-3.5 flex-shrink-0 text-white/60"
                     >
                       <path
                         fillRule="evenodd"
@@ -464,7 +466,7 @@ export default function ContactForm() {
                 key={q.id}
                 type="button"
                 onClick={() => setStep(questions.indexOf(q))}
-                className="rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium text-white/50 hover:border-gold-400/30 hover:text-gold-300 transition-colors cursor-pointer"
+                className="inline-flex min-h-[44px] items-center rounded-full border border-white/10 bg-white/[0.04] px-3.5 text-xs font-medium text-white/70 hover:border-gold-400/30 hover:text-gold-300 transition-colors cursor-pointer"
               >
                 {value}
               </button>

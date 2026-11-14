@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import styles from "./collection-pages.module.css";
+import { ButtonLink } from "./design-system";
 import type { CatalogCategory, CatalogImage } from "@/lib/catalog";
 
 type CatalogCategoryGroup = {
@@ -70,7 +71,7 @@ function Lightbox({
       if (event.key !== "Tab") return;
 
       const focusable = Array.from(
-        container.querySelectorAll<HTMLElement>("button:not([disabled])"),
+        container.querySelectorAll<HTMLElement>("button:not([disabled]), a[href]"),
       );
       if (!focusable.length) return;
 
@@ -165,7 +166,10 @@ function Lightbox({
         </>
       )}
 
-      <p className={styles.lightboxName}>{image.title} · {image.category} · #{numberLabel(image.number)}</p>
+      <div className={styles.lightboxFoot} onClick={(event) => event.stopPropagation()}>
+        <p className={styles.lightboxName}>{image.title} · {image.category} · #{numberLabel(image.number)}</p>
+        <ButtonLink href={`/contact?finish=${encodeURIComponent(image.slug)}`}>Quote this finish</ButtonLink>
+      </div>
       <div className="gallery-lightbox__counter" aria-live="polite">
         {index + 1} / {images.length}
       </div>
@@ -175,9 +179,9 @@ function Lightbox({
 }
 
 const descriptions: Record<CatalogCategory, string> = {
-  metallic: "Pearlescent pigments with flowing depth. Explore soft neutrals, rich earth tones, and statement colors.",
-  flakes: "Blended vinyl flakes with a textured, terrazzo-like appearance. Find a mix that suits your space.",
-  neon: "Bright accent colors for a more expressive finish. Ask us how to incorporate them into your floor.",
+  metallic: "Metallic pigment mixed into the epoxy and worked by hand, so the color moves and pools. No two floors come out the same.",
+  flakes: "Vinyl flakes broadcast into the wet base coat for a speckled, textured finish.",
+  neon: "Bright colors for accents, logos and borders. Tell us what you want them to mark and we'll plan where they go.",
 };
 export default function CatalogGrid({ categories }: Props) {
   const [activeCategory, setActiveCategory] = useState<CatalogCategory>(categories[0]?.key ?? "metallic");
