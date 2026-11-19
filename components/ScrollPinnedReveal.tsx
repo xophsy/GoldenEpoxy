@@ -204,7 +204,6 @@ export default function ScrollPinnedReveal({
             src={beforeImage}
             alt={imageAlt}
             fill
-            priority
             sizes="100vw"
             className="ba-scroll__image ba-scroll__image--before"
           />
@@ -214,7 +213,6 @@ export default function ScrollPinnedReveal({
               src={afterImage}
               alt=""
               fill
-              priority
               sizes="100vw"
               className="ba-scroll__image ba-scroll__image--after"
             />
