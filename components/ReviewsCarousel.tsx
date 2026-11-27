@@ -1,4 +1,7 @@
 export const GOOGLE_REVIEW_URL = "https://share.google/i1OkVsiyHWqzYPYcw";
+// Opens Google's review box straight away (place ID checked on Maps 2026-11-26: Golden Epoxy, Odessa).
+export const GOOGLE_WRITE_REVIEW_URL = "https://search.google.com/local/writereview?placeid=ChIJmTcfHTdXcAoRhps0mOk9ayc";
+export const FACEBOOK_REVIEW_URL = "https://www.facebook.com/profile.php?id=61565026196201&sk=reviews";
 
 export const REVIEWS = [
   {
